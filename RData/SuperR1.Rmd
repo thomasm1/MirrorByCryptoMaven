@@ -1,0 +1,1140 @@
+---
+title: "Les Triers R"
+author: "Thomas Maestas"
+date: "September 25, 2015"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+summary(cars)
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+# Haphazard commands
+plot(cars)
+getwd()
+setwd()
+list.files(path = ".", pattern = NULL, all.files = FALSE,
+           full.names = FALSE, recursive = FALSE,
+           ignore.case = FALSE, include.dirs = FALSE, no.. = FALSE) 
+?data.frame
+```
+
+```{r, cache=TRUE}
+# Preliminary Installs
+
+install.packages("devtools", dependencies=TRUE)
+install.packages("installr")
+installr::install.Rtools()
+
+devtools::has_devel()
+devtools::install_github('alanarnholT/PDS')
+devtools::install_github('thomasm1/ADA1_Repository/ADA')
+
+library(PDS)
+?"PDS-package"
+dim(AddHealth)
+dim(addhealth_public4)
+dim(NESARC)
+dim(OOL)
+dim(frustration)
+dim(gapminder)
+dim(ipeds_pds)
+dim(marscrater_pds)
+dim(signdist)
+head(marscrater_pds)
+head(signdist)
+# Lists of packages
+# Opens CRAN Task Views in browser
+#browseURL("http://cran.r-project.org/web/views/")
+# Opens "Available CRAN Packages By Name" (from UCLA mirror)
+#browseURL("http://cran.stat.ucla.edu/web/packages/available_packages_by_name.html")
+#library()  # Brings up editor list of available packages
+#search()  # Shows packages that are currently active
+#update.packages()  # Checks for updates; do periodically
+# By default, all installed packages are removed when R quits
+#detach("package:psych", unload=TRUE)
+
+# R doesn't create bar charts directly from the categorical
+# variables; instead, we must first create a table that
+# has the frequencies for each level of the variable.
+# The "table" function is able to create this table from
+# the variable, which we specify as sn$Site. 
+
+# That is, we first give the name of the data frame, then $, then the 
+# name of the variable. (Following Google's style guide,
+# it is better to state explictly the data frame than to
+# use the shortcut function "attach," which can lead to
+# confusion.)
+
+# Using package "foreign"
+#install.packages("foreign")
+library(foreign)
+#install.packages("gsheet")
+library(gsheet)
+# Matching
+install.packages("MatchIt")
+install.packages("Zelig")
+install.packages("Design")
+install.packages("optmatch")
+#transferCSV.s <- read.spss("C:\\Users\\Thomas\\SkyDrive\\T2_TwoYearAims\\survey\\addnetwork.dta", to.data.frame=T, use.value.labels=T)
+#str(transferCSV.s)
+#read.delim("http://w3.cnm.edu/~tmaestas29/Data/ICPSR/ICPSR_21600/DS0001/21600-0001-Data.dta",  header = TRUE, sep = "\t")
+#ada2
+ADA2.package.list <- c("BSDA",       "Hmisc",    "MASS",          "NbClust",
+                        "aod",        "candisc",  "car",           "cluster",
+                        "ellipse",    "ggplot2",  "gridExtra",     "klaR",
+                        "leaps",      "lsmeans",  "moments",       "multcomp",
+                        "mvnormtest", "nortest",  "plyr",          "popbio",
+                        "reshape",    "reshape2", "scatterplot3d", "vcd",
+                        "vioplot",    "xtable")
+install.packages(ADA2.package.list)
+```
+
+```{R, cache = TRUE}
+MARITAL.freq <- table(CCdata$MARITAL) 
+HOMEWORKHOURS.freq <- table(CCdata$HOMEWORKHOURS)  # HOMEWORKHOURS.freq HOMEWORKHOURS 0=ZERO, 1=1-2, 2=3-4, 4=4PLUS 
+AGE.freq <- table(CCdata$AGE) 
+RACE.freq <- table(CCdata$RACE) 
+# vector with named colors for gray and RGB for Facebook blue
+# fbba = "Facebook blue/ascending" for horizontal bars
+# And now breaking code across lines for clarity
+facebookBlue <- c(rep("beige", 1),
+                  rgb(59, 89, 152, maxColorValue = 255))
+#
+barplot(TRANSFERDESIRE.freq,
+        horiz = FALSE,         # Horizontal
+        col = "orange",        # Use colors "fbba"
+        main = "Transfer Desire",
+        ylab = "Student Count", 
+        xlab = "How much disappointment would feel if no transfer? \n 1=No Disappointment, 2=A little, 3=Considerable Disapointment")
+# To put the bars in descending order, add "order":
+#barplot(TRANSFERDESIRE.freq[order(TRANSFERDESIRE.freq, decreasing = F)])
+# Draw the bars horizontally (but turn off decreasing)
+#barplot(TRANSFERDESIRE.freq[order(TRANSFERDESIRE.freq)], horiz = T)
+
+
+barplot(TRANSFERDESIRE.freq,
+        horiz = F, 
+        col = facebookBlue)
+# Turn off borders with "border = NA"
+# Add title with "main" with "\n" to break line
+# Add subtitle with "sub"
+barplot(TRANSFERDESIRE.freq[order(TRANSFERDESIRE.freq)],
+barplot(TRANSFERDESIRE.freq,
+        horiz = F,         # Horizontal
+        col = facebookBlue,        # Use colors "fbba"
+        #border = NA,       # No borders
+       # xlim = c(0, 20),  # Scale from 0-100
+        main = "Transfer Desire, high=3",
+        ylab = "Student Count", 
+        xlab = "How much disappointment would\n feel if no transfer")
+# Immense amount of control available through
+# "par {graphics}"6rfy
+
+# RStudio gives option of saving as image file in
+# several formats and it's easier to change sizes
+```
+
+```{R, cache = TRUE}
+#eg.dat <- data.frame(rt=c(530, 540, 555), 
+#                     part.of.speech=c("Verb", "Noun", "Both")
+#                     )
+
+#ggplot(addhealth.sub, aes(part.of.speech, rt, fill=part.of.speech)) +
+  #geom_bar(stat="identity", colour="black") +
+  #scale_fill_manual(values=c("cyan", "blue", "darkblue")) 
+#ggplot(eg.dat, aes(part.of.speech, rt, alpha=part.of.speech)) +
+#  geom_bar(stat="identity", colour="black", fill="blue") +
+ # scale_alpha_discrete(range=c(0.4, 1)) + theme(legend.position="top")
+
+```
+
+
+```{R, cache = TRUE}
+#Titanic
+getwd()
+?data.frame
+test <- read.csv("C:/Users/thoma/Dropbox/Creative Cloud Files/__ADA1/Rcode/data/test.csv", header = TRUE)
+summary(test)
+dim(test)
+test.survived <- data.frame(Survived = rep("None", nrow(test)), test[,])
+dim(test.survived)
+summary(test.survived)
+train <- read.csv("C:/Users/thoma/Dropbox/Creative Cloud Files/__ADA1/Rcode/data/train.csv", header = TRUE)
+studentim <- read.csv("https://github.com/thomasm1/data.public/blob/master/SurveyStats110615_space", header = TRUE)
+str(studentim)
+dim(studentim)
+is.factor(test$Pclass)
+test$Pclass <- as.factor(test$Pclass)
+
+summary(train)
+data.combined <- rbind(train, test.survived)
+str(data.combined)
+data.combined$Survived <- as.integer(data.combined$Survived)
+
+library(ggplot2)
+ggplot(train, aes(x = Pclass, fill = factor(Survived))) + 
+    geom_histogram(binwidth = 0.5) +
+    xlab("Pclass") + 
+    ylab("TotalCount") + 
+    labs(fill = "Survived") 
+head(as.character(train$Name))  
+summary(train$Name)
+?unique
+length(unique(as.character(data.combined$Name))) # we found two duplicates
+dup.names <- as.character(data.combined[which(duplicated(as.character(data.combined$Name))), "Name"])
+summary(dup.names) #found the names
+data.combined[which(data.combined$Name %in% dup.names),] # what about other differences?
+library(stringr)
+misses <- data.combined[which(str_detect(data.combined$Name, "Miss.")),]
+misses[1:7,]
+mrses <- data.combined[which(str_detect(data.combined$Name, "Mrs.")),]
+mrses[1:7,]
+males <- data.combined[which(train$Sex == "male"),]
+males[1:5,]
+```
+
+```{R, cache = TRUE}
+x <- c(4, 3, 4, 3, 2, 4, 4, 4)
+names(x) <- c('One-Eye', 'Peg-Leg', 'Smitty', 'Hook', 'Scooter', 'Dan', 'Mikey', 'Blackbeard')
+barplot(x)
+abline(h = mean(x))
+is.factor(x)
+is.continuous(x)
+help(factor)
+
+
+chests <- c('gold', 'silver', 'gems', 'gold', 'gems')
+types <- factor(chests)
+weights <- c(300, 200, 100, 250, 150)
+prices <- c(9000, 5000, 12000, 7500, 18000)
+plot(weights, prices)
+plot(weights, prices, pch=as.integer(types))
+legend("topright", c("gems", "gold", "silver"), pch=1:3)
+help("pch")
+#If you hard-code the labels and plot characters, you'll have to update them every time you change the plot factor. Instead, it's better to derive them by using the levels function on your factor
+legend("topright", levels(types), pch=1:length(levels(types)))
+
+#data frame as something akin to a database table or an Excel spreadsheet. It has a specific number of columns, each of which is expected to contain values of a particular type. It also has an indeterminate number of rows - sets of related values for each column.
+treasure <- data.frame(weights, prices, types)
+print(treasure)
+#  weights prices  types
+#1     300   9000   gold
+#2     200   5000 silver
+#3     100  12000   gems
+#4     250   7500   gold
+#5     150  18000   gems
+treasure[[2]]
+treasure[["weights"]] # ~ treasure$weights
+#[1] 300 200 100 250 150
+treasure[[2]]
+
+###########################Data Collection Commences
+list.files()
+getwd()
+read.csv("")
+read.table()
+read.table("infantry.txt", sep="\t", header=TRUE)
+#For files that use separator strings other than commas, you can use the read.table function. The sep argument defines the separator character, and you can specify a tab character with "\t".
+infantry <- read.table("infantry.txt", sep="\t", header=TRUE)
+merge(x = targets, y = infantry)
+         Port Population Worth Infantry
+1   Cartagena      35000 10000      500
+2      Havana     140000 50000     2000
+3 Panama City     105000 35000     1500
+4 Porto Bello      49000 15000      700
+#R can test for correlation between two vectors with the cor.test function. Try calling it on the GDP and Piracy columns of the countries data frame:
+cor.test(countries$GDP, countries$Piracy)
+#Pearson's product-moment correlation
+data:  countries$GDP and countries$Piracy 
+t = -14.8371, df = 107, p-value < 2.2e-16
+alternative hypothesis: true correlation is not equal to 0 
+95 percent confidence interval:
+ -0.8736179 -0.7475690 
+sample estimates:
+       cor 
+-0.8203183 
+#lm function takes a model formula, which is represented by a response variable (piracy rate), a tilde character (~), and a predictor variable (GDP). (Note that the response variable comes first.)
+line <- lm(countries$Piracy ~ countries$GDP)
+abline(line)
+install.packages("ggplot2")
+help(package = "ggplot2")
+qplot(weights, prices, color=types)
+```
+
+
+
+## Exercise Pre-Inference BEGIN
+```{R, cache = TRUE}
+library(knitr)
+set.seed(76543); # recompile will have same random numbers
+# set global chunk options
+opts_chunk$set(concordance=TRUE)
+#opts_chunk$set(tidy.opts=list(keep.blank.line=TRUE, width.cutoff=60))
+opts_chunk$set(fig.path='images/SC1_02_R_plotting-', fig.align='center', fig.show='hold', tidy=FALSE)
+options(replace.assign=TRUE, width=70)
+library(xtable)
+# read data in wide format from space delimited text
+#   textConnection() will read text into an object
+
+
+#ALGORITHM ATTEMPT #0
+anscombe <- read.table(text = "
+   X     Y      X    Y      X     Y      X     Y
+10.0  8.04   10.0 9.14   10.0  7.46    8.0  6.58
+ 8.0  6.95    8.0 8.14    8.0  6.77    8.0  5.76
+13.0  7.58   13.0 8.74   13.0 12.74    8.0  7.71
+ 9.0  8.81    9.0 8.77    9.0  7.11    8.0  8.84
+11.0  8.33   11.0 9.26   11.0  7.81    8.0  8.47
+14.0  9.96   14.0 8.10   14.0  8.84    8.0  7.04
+ 6.0  7.24    6.0 6.13    6.0  6.08    8.0  5.25
+ 4.0  4.26    4.0 3.10    4.0  5.39   19.0 12.50
+12.0 10.84   12.0 9.13   12.0  8.15    8.0  5.56
+ 7.0  4.82    7.0 7.26    7.0  6.42    8.0  7.91
+ 5.0  5.68    5.0 4.74    5.0  5.73    8.0  6.89
+", header=TRUE)
+#anscombe
+# reformat the data into long format
+anscombe.long <- data.frame(
+                   x = c(anscombe[, 1], anscombe[, 3]
+                       , anscombe[, 5], anscombe[, 7])
+                 , y = c(anscombe[, 2], anscombe[, 4]
+                       , anscombe[, 6], anscombe[, 8])
+                 , g = sort(rep(1:4, nrow(anscombe)))
+                 )
+
+              head(anscombe.long, 2)
+tail(anscombe.long, 7)
+# function to calculate selected numerical summaries
+anscombe.sum <- function(df) {
+  results <- as.list(new.env());    # create a list to return with data
+
+  results$n      <- length(df$x)                       # sample size
+  results$x.mean <- mean(df$x)                         # mean of x
+  results$y.mean <- mean(df$y)                         # mean of y
+          lm.xy  <- lm(y ~ x, data=df)                 # fit slr
+  results$eq.reg <- lm.xy$coefficients                 # regression coefficients
+  results$b1.se  <- summary(lm.xy)$coefficients[2,2]   # SE of slope
+  results$b1.t   <- summary(lm.xy)$coefficients[2,3]   # t-stat of slope
+  results$x.SS   <- sum((df$x-results$x.mean)^2)       # x sum of squares
+  results$ResSS  <- sum(lm.xy$residuals^2)             # residual SS of y
+  results$RegSS  <- sum((df$y-results$y.mean)^2)-results$ResSS # reg SS
+  results$xy.cor <- cor(df$x, df$y)                    # correlation
+  results$xy.r2  <- summary(lm.xy)$r.squared           # R^2 for regression
+  return(results)
+}
+# calculate and store summaries by data group g
+results.temp <- by(anscombe.long, anscombe.long$g, anscombe.sum)
+# make a table
+x.table <- cbind( t(t(unlist(results.temp[[1]])))
+                , t(t(unlist(results.temp[[2]])))
+                , t(t(unlist(results.temp[[3]])))
+                , t(t(unlist(results.temp[[4]])))
+                )
+colnames(x.table) <- 1:4   # label the table columns
+xtab.out <- xtable(x.table, digits=2)
+print(xtab.out, floating=FALSE, math.style.negative=TRUE)
+library(ggplot2)
+p <- ggplot(anscombe.long, aes(x = x, y = y))
+p <- p + geom_point()
+p <- p + stat_smooth(method = lm, se = FALSE)
+p <- p + facet_wrap(~ g)
+p <- p + labs(title = "Anscombe's quartet")
+print(p)
+library(ggplot2)
+p <- ggplot(anscombe.long, aes(x = x, y = y))
+p <- p + geom_point()
+p <- p + stat_smooth(method = lm, se = FALSE)
+p <- p + facet_wrap(~ g)
+p <- p + labs(title = "Anscombe's quartet")
+print(p)
+## # only needed once after installing or upgrading R
+## install.packages("ggplot2")
+set.seed(76543); # recompile will have same random numbers
+# set global chunk options
+opts_chunk$set(concordance=TRUE)
+#opts_chunk$set(tidy.opts=list(keep.blank.line=TRUE, width.cutoff=60))
+opts_chunk$set(fig.path='images/SC1_02_R_plotting-', fig.align='center', fig.show='hold', tidy=FALSE)
+options(replace.assign=TRUE, width=70)
+library(xtable)
+# read data in wide format from space delimited text
+#   textConnection() will read text into an object
+anscombe <- read.table(text = "
+   X     Y      X    Y      X     Y      X     Y
+10.0  8.04   10.0 9.14   10.0  7.46    8.0  6.58
+ 8.0  6.95    8.0 8.14    8.0  6.77    8.0  5.76
+13.0  7.58   13.0 8.74   13.0 12.74    8.0  7.71
+ 9.0  8.81    9.0 8.77    9.0  7.11    8.0  8.84
+11.0  8.33   11.0 9.26   11.0  7.81    8.0  8.47
+14.0  9.96   14.0 8.10   14.0  8.84    8.0  7.04
+ 6.0  7.24    6.0 6.13    6.0  6.08    8.0  5.25
+ 4.0  4.26    4.0 3.10    4.0  5.39   19.0 12.50
+12.0 10.84   12.0 9.13   12.0  8.15    8.0  5.56
+ 7.0  4.82    7.0 7.26    7.0  6.42    8.0  7.91
+ 5.0  5.68    5.0 4.74    5.0  5.73    8.0  6.89
+", header=TRUE)
+
+
+
+#ALGORITHM ATTEMPT #1
+#anscombe
+# reformat the data into long format
+anscombe.long <- data.frame(
+                   x = c(anscombe[, 1], anscombe[, 3]
+                       , anscombe[, 5], anscombe[, 7])
+                 , y = c(anscombe[, 2], anscombe[, 4]
+                       , anscombe[, 6], anscombe[, 8])
+                 , g = sort(rep(1:4, nrow(anscombe)))
+                 )
+
+head(anscombe.long, 2)
+tail(anscombe.long, 2)
+# function to calculate selected numerical summaries
+anscombe.sum <- function(df) {
+  results <- as.list(new.env());    # create a list to return with data
+
+  results$n      <- length(df$x)                       # sample size
+  results$x.mean <- mean(df$x)                         # mean of x
+  results$y.mean <- mean(df$y)                         # mean of y
+          lm.xy  <- lm(y ~ x, data=df)                 # fit slr
+  results$eq.reg <- lm.xy$coefficients                 # regression coefficients
+  results$b1.se  <- summary(lm.xy)$coefficients[2,2]   # SE of slope
+  results$b1.t   <- summary(lm.xy)$coefficients[2,3]   # t-stat of slope
+  results$x.SS   <- sum((df$x-results$x.mean)^2)       # x sum of squares
+  results$ResSS  <- sum(lm.xy$residuals^2)             # residual SS of y
+  results$RegSS  <- sum((df$y-results$y.mean)^2)-results$ResSS # reg SS
+  results$xy.cor <- cor(df$x, df$y)                    # correlation
+  results$xy.r2  <- summary(lm.xy)$r.squared           # R^2 for regression
+  return(results)
+}
+# calculate and store summaries by data group g
+results.temp <- by(anscombe.long, anscombe.long$g, anscombe.sum)
+# make a table
+x.table <- cbind( t(t(unlist(results.temp[[1]])))
+                , t(t(unlist(results.temp[[2]])))
+                , t(t(unlist(results.temp[[3]])))
+                , t(t(unlist(results.temp[[4]])))
+                )
+colnames(x.table) <- 1:4   # label the table columns
+xtab.out <- xtable(x.table, digits=2)
+print(xtab.out, floating=FALSE, math.style.negative=TRUE)
+library(ggplot2)
+p <- ggplot(anscombe.long, aes(x = x, y = y))
+p <- p + geom_point()
+p <- p + stat_smooth(method = lm, se = FALSE)
+p <- p + facet_wrap(~ g)
+p <- p + labs(title = "Anscombe's quartet")
+print(p)
+library(ggplot2)
+p <- ggplot(anscombe.long, aes(x = x, y = y))
+p <- p + geom_point()
+p <- p + stat_smooth(method = lm, se = FALSE)
+p <- p + facet_wrap(~ g)
+p <- p + labs(title = "Anscombe's quartet")
+print(p)
+
+
+
+## ATTEMPT #2
+
+####Youtube R4.2
+set.seed(1001)
+dim(addhealth.sub)
+d <- rpois(3016, 33)
+GetCI <- function(x, level=0.95){
+  m <- mean(x)
+  n <- length(x)
+  SE <- sd(x)/sqrt(n)
+  upper <- 1 - (1-level)/2
+  ci <- m + c(-1,1)*qt(upper, n = 1)*SE
+  return(list(mean=m, se=SE, ci=ci))
+}
+GetCI(d,99)
+
+
+
+
+
+## # only needed once after installing or upgrading R
+## install.packages("ggplot2")
+# each time you start R
+# load ggplot2 functions and datasets
+library(ggplot2)
+
+# ggplot2 includes a dataset "mpg"
+
+# ? gives help on a function or dataset
+?mpg
+# head() lists the first several rows of a data.frame
+head(mpg)
+# str() gives the structure of the object
+str(mpg)
+# summary() gives frequeny tables for categorical variables
+#             and mean and five-number summaries for continuous variables
+summary(mpg)
+# specify the dataset and variables
+p <- ggplot(mpg, aes(x = displ, y = hwy))
+p <- p + geom_point() # add a plot layer with points
+print(p)
+p <- ggplot(mpg, aes(x = displ, y = hwy))
+p <- p + geom_point(aes(colour = class))
+print(p)
+p <- ggplot(mpg, aes(x = displ, y = hwy))
+p <- p + geom_point(aes(colour = class, size = cyl, shape = drv))
+print(p)
+p <- ggplot(mpg, aes(x = displ, y = hwy))
+p <- p + geom_point(aes(colour = class, size = cyl, shape = drv), alpha = 1/4) # alpha is opacity
+print(p)
+## p <- ggplot(mpg, aes(x = displ, y = hwy)) + geom_point()
+## p1 <- p + facet_grid(. ~ cyl)
+## p2 <- p + facet_grid(drv ~ .)
+## p3 <- p + facet_grid(drv ~ cyl)
+## p4 <- p + facet_wrap(~ class)
+## print(p1)  # print each to see
+p <- ggplot(mpg, aes(x = displ, y = hwy)) + geom_point()
+p1 <- p + facet_grid(. ~ cyl)
+print(p1)
+p <- ggplot(mpg, aes(x = displ, y = hwy)) + geom_point()
+p2 <- p + facet_grid(drv ~ .)
+print(p2)
+p <- ggplot(mpg, aes(x = displ, y = hwy)) + geom_point()
+p3 <- p + facet_grid(drv ~ cyl)
+print(p3)
+p <- ggplot(mpg, aes(x = displ, y = hwy)) + geom_point()
+p4 <- p + facet_wrap(~ class)
+print(p4)
+p <- ggplot(mpg, aes(x = cty, y = hwy))
+p <- p + geom_point()
+print(p)
+p <- ggplot(mpg, aes(x = cty, y = hwy))
+p <- p + geom_point(position = 'jitter')
+print(p)
+p <- ggplot(mpg, aes(x = class, y = hwy))
+p <- p + geom_point()
+print(p)
+p <- ggplot(mpg, aes(x = reorder(class, hwy), y = hwy))
+p <- p + geom_point()
+print(p)
+p <- ggplot(mpg, aes(x = reorder(class, hwy), y = hwy))
+p <- p + geom_point(position = 'jitter')
+print(p)
+p <- ggplot(mpg, aes(x = reorder(class, hwy), y = hwy))
+p <- p + geom_jitter(position = position_jitter(width = .1))
+print(p)
+p <- ggplot(mpg, aes(x = reorder(class, hwy), y = hwy))
+p <- p + geom_boxplot()
+print(p)
+p <- ggplot(mpg, aes(x = reorder(class, hwy), y = hwy))
+p <- p + geom_jitter(position = position_jitter(width = .1))
+p <- p + geom_boxplot()
+print(p)
+p <- ggplot(mpg, aes(x = reorder(class, hwy, FUN = median), y = hwy))
+p <- p + geom_jitter(position = position_jitter(width = .1))
+p <- p + geom_boxplot(alpha = 0.5)
+print(p)
+p <- ggplot(mpg, aes(x = reorder(class, hwy, FUN = median), y = hwy))
+p <- p + geom_boxplot(alpha = 0.5)
+p <- p + geom_jitter(position = position_jitter(width = .1))
+print(p)
+
+
+#ALGORITHM ATTEMPT #2
+library(ggplot2)
+
+# ggplot2 includes a dataset "mpg"
+
+# ? gives help on a function or dataset
+?mpg
+# head() lists the first several rows of a data.frame
+head(mpg)
+# str() gives the structure of the object
+str(mpg)
+# summary() gives frequeny tables for categorical variables
+#             and mean and five-number summaries for continuous variables
+summary(mpg)
+# specify the dataset and variables
+p <- ggplot(mpg, aes(x = displ, y = hwy))
+p <- p + geom_point() # add a plot layer with points
+print(p)
+p <- ggplot(mpg, aes(x = displ, y = hwy))
+p <- p + geom_point(aes(colour = class))
+print(p)
+p <- ggplot(mpg, aes(x = displ, y = hwy))
+p <- p + geom_point(aes(colour = class, size = cyl, shape = drv))
+print(p)
+p <- ggplot(mpg, aes(x = displ, y = hwy))
+p <- p + geom_point(aes(colour = class, size = cyl, shape = drv), alpha = 1/4) # alpha is opacity
+print(p)
+## p <- ggplot(mpg, aes(x = displ, y = hwy)) + geom_point()
+## p1 <- p + facet_grid(. ~ cyl)
+## p2 <- p + facet_grid(drv ~ .)
+## p3 <- p + facet_grid(drv ~ cyl)
+## p4 <- p + facet_wrap(~ class)
+## print(p1)  # print each to see
+p <- ggplot(mpg, aes(x = displ, y = hwy)) + geom_point()
+p1 <- p + facet_grid(. ~ cyl)
+print(p1)
+p <- ggplot(mpg, aes(x = displ, y = hwy)) + geom_point()
+p2 <- p + facet_grid(drv ~ .)
+print(p2)
+p <- ggplot(mpg, aes(x = displ, y = hwy)) + geom_point()
+p3 <- p + facet_grid(drv ~ cyl)
+print(p3)
+p <- ggplot(mpg, aes(x = displ, y = hwy)) + geom_point()
+p4 <- p + facet_wrap(~ class)
+print(p4)
+p <- ggplot(mpg, aes(x = cty, y = hwy))
+p <- p + geom_point()
+print(p)
+p <- ggplot(mpg, aes(x = cty, y = hwy))
+p <- p + geom_point(position = 'jitter')
+print(p)
+p <- ggplot(mpg, aes(x = class, y = hwy))
+p <- p + geom_point()
+print(p)
+p <- ggplot(mpg, aes(x = reorder(class, hwy), y = hwy))
+p <- p + geom_point()
+print(p)
+p <- ggplot(mpg, aes(x = reorder(class, hwy), y = hwy))
+p <- p + geom_point(position = 'jitter')
+print(p)
+p <- ggplot(mpg, aes(x = reorder(class, hwy), y = hwy))
+p <- p + geom_jitter(position = position_jitter(width = .1))
+print(p)
+p <- ggplot(mpg, aes(x = reorder(class, hwy), y = hwy))
+p <- p + geom_boxplot()
+print(p)
+p <- ggplot(mpg, aes(x = reorder(class, hwy), y = hwy))
+p <- p + geom_jitter(position = position_jitter(width = .1))
+p <- p + geom_boxplot()
+print(p)
+p <- ggplot(mpg, aes(x = reorder(class, hwy, FUN = median), y = hwy))
+p <- p + geom_jitter(position = position_jitter(width = .1))
+p <- p + geom_boxplot(alpha = 0.5)
+print(p)
+p <- ggplot(mpg, aes(x = reorder(class, hwy, FUN = median), y = hwy))
+p <- p + geom_boxplot(alpha = 0.5)
+p <- p + geom_jitter(position = position_jitter(width = .1))
+print(p)
+```
+## Exercise Pre-Inference END
+
+
+
+##Exercise INFERENCE BEGIN
+```{R}
+##Exercise Begin  INFERENCE
+
+#### Illustration of Central Limit Theorem, Uniform distribution
+# demo.clt.unif(N, n)
+# draws N samples of size n from Uniform(0,1)
+# and plots the N means with a normal distribution overlay
+demo.clt.unif <- function(N, n) {
+# draw sample in a matrix with N columns and n rows
+sam <- matrix(runif(N*n, 0, 1), ncol=N);
+# calculate the mean of each column
+sam.mean <- colMeans(sam)
+# the sd of the mean is the SEM
+sam.se <- sd(sam.mean)
+# calculate the true SEM given the sample size n
+true.se <- sqrt((1/12)/n)
+# draw a histogram of the means
+hist(sam.mean, freq = FALSE, breaks = 25
+, main = paste("True SEM =", round(true.se, 4)
+, ", Est SEM = ", round( sam.se, 4))
+, xlab = paste("n =", n))
+# overlay a density curve for the sample means
+points(density(sam.mean), type = "l")
+# overlay a normal distribution, bold and red
+x <- seq(0, 1, length = 1000)
+points(x, dnorm(x, mean = 0.5, sd = true.se), type = "l", lwd = 2, col = "red")
+# place a rug of points under the plot
+rug(sam.mean)
+}
+par(mfrow=c(2,2));
+demo.clt.unif(10000, 1);
+demo.clt.unif(1000, 1);
+demo.clt.unif(100, 1);
+demo.clt.unif(10, 1);
+
+demo.clt.unif(10000, 2);
+demo.clt.unif(1000, 2);
+demo.clt.unif(100, 2);
+demo.clt.unif(10, 2);
+
+demo.clt.unif(10000, 6);
+demo.clt.unif(1000, 6);
+demo.clt.unif(100, 6);
+demo.clt.unif(10, 6);
+
+demo.clt.unif(10000, 12);
+demo.clt.unif(1000, 12);
+demo.clt.unif(100, 12);
+demo.clt.unif(10, 12);
+
+#### Illustration of Central Limit Theorem, Exponential distribution
+# demo.clt.exp(N, n) draws N samples of size n from Exponential(1)
+# and plots the N means with a normal distribution overlay
+demo.clt.exp <- function(N, n) {
+# draw sample in a matrix with N columns and n rows
+sam <- matrix(rexp(N*n, 1), ncol=N);
+# calculate the mean of each column
+sam.mean <- colMeans(sam)
+# the sd of the mean is the SEM
+sam.se <- sd(sam.mean)
+# calculate the true SEM given the sample size n
+true.se <- sqrt(1/n)
+# draw a histogram of the means
+hist(sam.mean, freq = FALSE, breaks = 25
+, main = paste("True SEM =", round(true.se, 4), ", Est SEM = ", round(sam.se, 4))
+, xlab = paste("n =", n))
+# overlay a density curve for the sample means
+points(density(sam.mean), type = "l")
+# overlay a normal distribution, bold and red
+x <- seq(0, 5, length = 1000)
+points(x, dnorm(x, mean = 1, sd = true.se), type = "l", lwd = 2, col = "red")
+# place a rug of points under the plot
+rug(sam.mean)
+}
+par(mfrow=c(2,2));
+demo.clt.exp(10000, 1);
+demo.clt.exp(10000, 6);
+demo.clt.exp(10000, 30);
+demo.clt.exp(10000, 100);
+
+
+
+#### More examples for Central Limit Theorem can be illustrated with this code
+# install.packages("TeachingDemos")
+library(TeachingDemos)
+# look at examples at bottom of the help page
+?clt.examp
+
+# sample from normal distribution
+df <- data.frame(x = rnorm(100, mean = 100, sd = 15))
+df$z <- scale(df$x) # by default, this performs a z-score transformation
+summary(df)
+## x z.V1
+## Min. : 39.64 Min. :-3.446123
+## 1st Qu.: 90.99 1st Qu.:-0.485300
+## Median :100.00 Median : 0.033925
+## Mean : 99.41 Mean : 0.000000
+## 3rd Qu.:110.72 3rd Qu.: 0.652006
+## Max. :132.70 Max. : 1.919736
+## ggplot
+library(ggplot2)
+p1 <- ggplot(df, aes(x = x))
+# Histogram with density instead of count on y-axis
+p1 <- p1 + geom_histogram(aes(y=..density..))
+p1 <- p1 + geom_density(alpha=0.1, fill="white")
+p1 <- p1 + geom_rug()
+p1 <- p1 + labs(title = "X ~ Normal(100, 15)")
+p2 <- ggplot(df, aes(x = z))
+# Histogram with density instead of count on y-axis
+p2 <- p2 + geom_histogram(aes(y=..density..))
+p2 <- p2 + geom_density(alpha=0.1, fill="white")
+p2 <- p2 + geom_rug()
+p2 <- p2 + labs(title = "Z ~ Normal(0, 1)")
+library(gridExtra)
+grid.arrange(p1, p2, ncol=1)
+## stat bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
+## stat bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
+
+#t
+#### Normal vs t-distributions with a range of degrees-of-freedom
+x <- seq(-8, 8, length = 1000)
+par(mfrow=c(1,1))
+plot(x, dnorm(x), type = "l", lwd = 2, col = "red"
+, main = "Normal (red) vs t-dist with df=1, 2, 6, 12, 30, 100")
+points(x, dt(x, 1), type = "l")
+points(x, dt(x, 2), type = "l")
+points(x, dt(x, 6), type = "l")
+points(x, dt(x, 12), type = "l")
+points(x, dt(x, 30), type = "l")
+points(x, dt(x,100), type = "l")
+???
+
+## bootstrap
+#### Visual comparison of whether sampling distribution is close to Normal via Bootstrap
+# a function to compare the bootstrap sampling distribution with
+# a normal distribution with mean and SEM estimated from the data
+bs.one.samp.dist <- function(dat, N = 1e4) {
+n <- length(dat);
+# resample from data
+sam <- matrix(sample(dat, size = N * n, replace = TRUE), ncol=N);
+# draw a histogram of the means
+sam.mean <- colMeans(sam);
+# save par() settings
+old.par <- par(no.readonly = TRUE)
+# make smaller margins
+par(mfrow=c(2,1), mar=c(3,2,2,1), oma=c(1,1,1,1))
+# Histogram overlaid with kernel density curve
+hist(dat, freq = FALSE, breaks = 6
+, main = "Plot of data with smoothed density curve")
+points(density(dat), type = "l")
+rug(dat)
+hist(sam.mean, freq = FALSE, breaks = 25
+, main = "Bootstrap sampling distribution of the mean"
+, xlab = paste("Data: n =", n
+, ", mean =", signif(mean(dat), digits = 5)
+, ", se =", signif(sd(dat)/sqrt(n)), digits = 5))
+# overlay a density curve for the sample means
+points(density(sam.mean), type = "l")
+# overlay a normal distribution, bold and red
+x <- seq(min(sam.mean), max(sam.mean), length = 1000)
+points(x, dnorm(x, mean = mean(dat), sd = sd(dat)/sqrt(n))
+, type = "l", lwd = 2, col = "red")
+# place a rug of points under the plot
+rug(sam.mean)
+# restore par() settings
+par(old.par)
+}
+# example data, skewed --- try others datasets to develop your intuition
+x <- rgamma(10, shape = .5, scale = 20)
+bs.one.samp.dist(x)
+
+
+# stem-and-leaf plot
+stem(age, scale=2)
+##
+## The decimal point is 1 digit(s) to the right of the |
+##
+## 3 | 3
+## 3 |
+## 4 | 2
+## 4 | 99
+## 5 | 1444
+## 5 | 68
+## 6 | 4
+# t.crit
+qt(1 - 0.05/2, df = length(age) - 1)
+## [1] 2.228139
+# look at help for t.test
+?t.test
+# defaults include: alternative = "two.sided", conf.level = 0.95
+t.summary <- t.test(age, mu = 50)
+t.summary
+
+##
+## One Sample t-test
+##
+## data: age
+## t = 0.51107, df = 10, p-value = 0.6204
+## alternative hypothesis: true mean is not equal to 50
+## 95 percent confidence interval:
+## 45.72397 56.82149
+
+## sample estimates:
+## mean of x
+## 51.27273
+summary(age)
+## Min. 1st Qu. Median Mean 3rd Qu. Max.
+## 33.00 49.00 54.00 51.27 55.00 64.00
+
+# Function out plot t-distribution with shaded p-value
+t.dist.pval <- function(t.summary) {
+par(mfrow=c(1,1))
+lim.extreme <- max(4, abs(t.summary$statistic) + 0.5)
+lim.lower <- -lim.extreme;
+lim.upper <- lim.extreme;
+x.curve <- seq(lim.lower, lim.upper, length=200)
+y.curve <- dt(x.curve, df = t.summary$parameter)
+plot(x.curve, y.curve, type = "n"
+, ylab = paste("t-dist( df =", signif(t.summary$parameter, 3), ")")
+, xlab = paste("t-stat =", signif(t.summary$statistic, 5)
+, ", Shaded area is p-value =", signif(t.summary$p.value, 5)))
+if ((t.summary$alternative == "less")
+| (t.summary$alternative == "two.sided"))  {
+x.pval.l <- seq(lim.lower, -abs(t.summary$statistic), length=200)
+
+y.pval.l <- dt(x.pval.l, df = t.summary$parameter)
+polygon(c(lim.lower, x.pval.l, -abs(t.summary$statistic))
+, c(0, y.pval.l, 0), col="gray")
+}
+if ((t.summary$alternative == "greater")
+| (t.summary$alternative == "two.sided"))  {
+x.pval.u <- seq(abs(t.summary$statistic), lim.upper, length=200)
+y.pval.u <- dt(x.pval.u, df = t.summary$parameter)
+polygon(c(abs(t.summary$statistic), x.pval.u, lim.upper)
+, c(0, y.pval.u, 0), col="gray")
+}
+points(x.curve, y.curve, type = "l", lwd = 2, col = "black")
+}
+# for the age example
+t.dist.pval(t.summary)
+
+names(t.summary)
+## [1] "statistic" "parameter" "p.value" "conf.int"
+## [5] "estimate" "null.value" "alternative" "method"
+## [9] "data.name"
+t.summary$statistic
+## t
+## 0.5110715
+t.summary$parameter
+## df
+## 10
+t.summary$p.value
+## [1] 0.6203942
+t.summary$conf.int
+## [1] 45.72397 56.82149
+## attr(,"conf.level")
+## [1] 0.95
+t.summary$estimate
+## mean of x
+## 51.27273
+t.summary$null.value
+## mean
+## 50
+t.summary$alternative
+## [1] "two.sided"
+t.summary$method
+## [1] "One Sample t-test"
+t.summary$data.name
+## [1] "age"
+
+#### Example: Meteorites
+# enter data as a vector
+toco <- c(5.6, 2.7, 6.2, 2.9, 1.5, 4.0, 4.3, 3.0, 3.6, 2.4, 6.7, 3.8)
+par(mfrow=c(2,1))
+# Histogram overlaid with kernel density curve
+hist(toco, freq = FALSE, breaks = 6)
+points(density(toco), type = "l")
+rug(toco)
+# violin plot
+library(vioplot)
+vioplot(toco, horizontal=TRUE, col="gray")
+
+# stem-and-leaf plot
+stem(toco, scale=2)
+##
+## The decimal point is at the |
+##
+## 1 | 5
+## 2 | 479
+## 3 | 068
+## 4 | 03
+## 5 | 6
+## 6 | 27
+# t.crit
+qt(1 - 0.05/2, df = length(toco) - 1)
+## [1] 2.200985
+t.summary <- t.test(toco, mu = 0.54)
+t.summary
+##
+## One Sample t-test
+##
+## data: toco
+## t = 7.3366, df = 11, p-value = 1.473e-05
+## alternative hypothesis: true mean is not equal to 0.54
+## 95 percent confidence interval:
+## 2.886161 4.897172
+## sample estimates:
+## mean of x
+## 3.891667
+summary(toco)
+## Min. 1st Qu. Median Mean 3rd Qu. Max.
+## 1.500 2.850 3.700 3.892 4.625 6.700
+
+t.dist.pval(t.summary)
+bs.one.samp.dist(toco)
+
+#### Power calculations (that you can do on your own)
+install.packages("pwr")
+library(pwr)
+?power.t.test
+power.t.test(n = NULL, delta = 1.00 - 0.54, sd = sd(toco), sig.level = 0.05,power = 0.50
+, type = "one.sample", alternative = "two.sided")
+power.t.test(n = NULL, delta = 0.75 - 0.54, sd = sd(toco), sig.level = 0.05, power = 0.50)
+
+install.packages("TeachingDemos")
+library(TeachingDemos)
+# Demonstrate concepts of Power.
+??power.example
+
+#### Example: Weights of canned tomatoes
+tomato <- c(20.5, 18.5, 20.0, 19.5, 19.5, 21.0, 17.5, 22.5, 20.0, 19.5, 18.5,20.0, 18.0, 20.5)
+par(mfrow=c(2,1))
+# Histogram overlaid with kernel density curve
+hist(tomato, freq = FALSE, breaks = 6)
+points(density(tomato), type = "l")
+rug(tomato)
+# violin plot
+library(vioplot)
+vioplot(tomato, horizontal=TRUE, col="gray")
+# t.crit
+qt(1 - 0.05/2, df = length(tomato) - 1)
+## [1] 2.160369
+t.summary <- t.test(tomato, mu = 20, alternative = "less")
+t.summary
+##
+## One Sample t-test
+##
+## data: tomato
+## t = -0.92866, df = 13, p-value = 0.185
+## alternative hypothesis: true mean is less than 20
+## 95 percent confidence interval:
+## -Inf 20.29153
+## sample estimates:
+## mean of x
+## 19.67857
+summary(tomato)
+## Min. 1st Qu. Median Mean 3rd Qu. Max.
+## 17.50 18.75 19.75 19.68 20.38 22.50
+
+t.dist.pval(t.summary)
+bs.one.samp.dist(tomato)
+
+```
+##Exercise INFERENCE END
+
+##Exercise POWER begin
+p <- 3
+fVals <- seq(0, 1.2, length.out=100)
+dVals <- seq(0, 3, length.out=100)
+nn <- c(5,10,25,100)
+alpha <- 0.05
+
+getFPow <- function(n){
+  critF <- qf(1-alpha, P-1, P*n * fVals^2)
+}
+getTPow <- function(n){
+  critT <- qt(1-alpha, n-1)
+  }
+
+powsF <- sapply(nn, getFPow)
+powT <- sapply(nn, getTPow)
+ 
+par(mfrow=c(1,2))
+matplot(dVals, powsT, type="1", lty=1, lwd=2, xlab="effect size d", ylab="Power", main="Power one-sample t-test", xaxs="i", xlim=c(-0.05, 1.1), col=c("blue", "red", "darkgreen", "green"))
+legend(x="bottomright", legend=past("N=", nn), lwd=2, col=
+c("blue", "red", "darkgreen", "green"))
+library(pwr)
+pwrt2 <- pwr.ttest(d=.2, n=seq(2,100,1), sig.level=.05, type="one.sample", 
+alternative="two.sided")
+##Exercise POWER begin
+##WS_15_HypothesisTest_OneTwoSample: ADA1: Class 15, Hypothesis testing (one- and two-sample)
+
+
+AGE and Time
+<!--
+Age  Method #1
+BirthDayX <-rep(15, 6504)
+addhealth.sub$BirthDayX <- BirthDayX
+date.sub <- subset(addhealth.sub, select = c(SurveyDay, SurveyMonth, SurveyYear, BirthDayX, BirthMonth, BirthYear))
+str(date.sub)
+Combine the date fields together, then interpret them into a date object.
+I'll do this for both the interview date and the date of birth.
+I print the head (first 6 observations) after each operation.
+{R}
+library(lubridate)
+## interview date
+# combinemonth, and year into one text string
+cdate.text <- paste(date.sub$SurveyDay, date.sub$SurveyMonth,date.sub$SurveyYear)
+head(cdate.text)
+# create date object by interpretting the day, month, year with dmy()
+cdate.date <- dmy(cdate.text)
+head(cdate.date)
+## date of birth
+# combine day, month, and year into one text string
+dob.text <- paste(date.sub$BirthDayX, date.sub$BirthMonth, date.sub$BirthYear)
+head(dob.text)
+dob.date <- dmy(dob.text)
+head(dob.date)
+#Now that we have the interview date and date of birth as date objects,  we calculate the difference to give the person's age at the time of the interview.  Because the difference of dates is in the unit "days", we convert to years.
+# difference in days / 365.25 = difference in years
+str(cdate.date)
+age.days <- cdate.date - dob.date
+head(age.days)
+age.years <- as.numeric(age.days / 365.25)  # change from "difftime" to "numeric"
+head(age.years)
+# difference between the age we calculated and the age in the original dataset
+head(age.years - addhealth.sub$Age)
+addhealth.sub$age.years <- age.years
+str(addhealth.sub)
+-->
+```
+
+######################################################################
+# LATEX PDF PRINTING
+######################################################################
+Step 1:
+Export the source code from your Rmd (Markdown) file so it can be read into
+your Rnw (LaTeX) file.
+  R Console: Output R code from your homework (see top of my HW.Rmd file)
+    fn.this <- "ADA1_HW_ALL_NESARC_Project_20151118.Rmd"
+    setwd("C:/Dropbox/UNM/teach/ADA_Redesign_2015/ADA1_Content/homework")
+    library(knitr)
+    purl(fn.this)
+
+  LaTeX
+  %% Add your HW file's *.R file (from perl()) here
+  <<source, comment = NA, echo = FALSE, message = FALSE, warning=FALSE, results='hide', include=FALSE>>=
+  setwd("C:/Dropbox/UNM/teach/ADA_Redesign_2015/ADA1_Content/homework")
+  source("ADA1_HW_ALL_NESARC_Project_20151118.R")
+  @
+Step 2:
+Copy blocks of text/code from your Rmd file to Rnw, fix up into LaTeX, and
+compile.  Do one small part at a time and make sure each change you make
+continues to work. If it stops working, it was the last thing you did.  Read
+any compile error message and try to fix it.
+Step 3:
+Figure sizes. Adjust fig.width and fig.height for the size the figure is
+created, then adjust out.width for the size the figure is displayed on the
+page. For example, if fig.* were both really big (around 20, inches is the
+unit), but out.width='1\\textwidth', then the text would look very small (since
+a big image was squeezed into a small area). This is one strategy for
+controlling the text size of the figure.
+
+----------
+A Helpful reference for translations between Markdown and LaTeX
+Code chunks
+  Markdown
+    ```{R, options}
+    code
+    ```
+  LaTeX
+    <<unique_name, options>>=
+    code
+    @
+Citations
+  Markdown
+    [@ref1;@ref2]
+  LaTeX
+    \cite{ref1,ref2}
+List
+  Markdown
+    * a1
+    * a2
+  LaTeX
+    \begin{itemize}
+    \item a1
+    \item a2
+    \end{itemize}
+Bibliography
+  Markdown
+    bibliography: bibfile.bib
+  LaTeX
+    \bibliography{bibfile}
+Values in text
+  Markdown
+    `r nrow(NESARC)`
+  LaTeX
+    \Sexpr{nrow(NESARC)}
+Variable names in text
+  Markdown
+    `VarName`
+  LaTeX
+    \verb|VarName|
+Quotes
+  Markdown
+    "begin and end"
+  LaTeX
+    ``begin and end''
+END OF LINE

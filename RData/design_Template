@@ -1,0 +1,1414 @@
+---
+title: "ADA1: HW 08 Hypothesis Testing One and Two-Sample Testing"
+author: anonymous
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_document:
+    toc: true
+bibliography: Nouvelle_ADA1.bib
+nocite: |
+  @Mccarron2006gap | 
+  @Bohon2006,|
+  @davis2005influence,|
+  @Flashman2014, |
+  @Furstenberg2000, |
+  @kim2005social, |
+  @mccarron2006gap, |
+  @mcdill1965family, |
+  Morgan1996
+---
+# Rubric
+
+1. Using a numerical response variable and a two-level categorical variable (or a categorical variable you can reduce to two levels),
+  specify a two-sample $t$-test associated with your research questions.
+    * (2 p) Specify the hypotheses in words and notation (either one- or two-sided test),
+#
+    Let $\mu_i$ = pop mean Expectation to Attend College for children in group $i$, $(i=1,2,3)$.
+We wish to test $H_0: \mu_1=\mu_2=\mu_3$ against $H_A: \textrm{not } H_0$.
+#
+    * (0 p) use `t.test()` to calculate the mean, test statistic, and p-value,
+    
+    * (3 p) state the significance level, test statistic, and p-value, and
+    * (2 p) state the conclusion in the context of the problem.
+    * (1 p) Given your conclusion, could you have committed at Type-I or Type-II error?
+    * (2 p) Provide an appropriate plot of the data and sample estimates in a well-labelled plot.
+``` {R, cache = TRUE}
+#setwd("C:/Users/Thomas/Dropbox/_DOCUMENTS_/__ADA1/ADA1_Content/Nouvelle")
+library(knitr)
+#purl(fn.this)
+#rmarkdown::render(fn.this)
+knitr::opts_chunk$set(comment = NA, message = FALSE, warning = FALSE, fig.align = "center")
+knitr::opts_chunk$set(fig.height = 4, fig.width = 6)
+knitr::opts_chunk$set(cache = TRUE)           #$
+```
+----------------------------------------
+
+## HW01: Personal Codebook
+
+__Dataset__: National Longitudinal Adolescent Health Survey. Wave1, survey date is 1994/1995, tracking grades 7-12--ages approximately 12-19. The study also follows up at later times like 1996 (ages 14-21), 2001-2002(ages 19-26), and wave four in 2007-2008(ages 22-32).  
+Dataset: AddHealth
+Primary association: Student Desire to Attend College VS Parental College Concern 
+----------------
+Key:
+VarName
+  Variable description
+  Data type (Continuous, Discrete, Nominal, Ordinal)
+  Frequency ItemValue Description
+AID (Wave 1)
+  UNIQUE ID NUMBER WITH NO ALPHABETICS
+  Nominal
+  Unique Identification number
+BIO_SEX 
+  GENDER MALE
+  2 = female
+  1 = male
+  6 = NA
+  Nominal
+AGE (Age)
+  AGE
+  Age:   age = (mdy(imonth,iday,1995)-mdy(h1gi1m,15,(h1gi1y+1900)))/365.25
+  Continuous
+H1EE1
+  DESIRE TO GO TO COLLEGE
+  DesireCollege: 1-5; 6=refused, 8=don't know, 9=NotApplic
+  Discrete
+  1-5. 1=low
+H1EE2
+  EXPECTATION TO GO TO COLLEGE
+  ExpectCollege: 1-5; 6=refused, 8=don't know, 9=NotApplic 
+  Discrete
+  1-5. 1= low; 5=high
+H1EE3
+  WHETHER WORKED IN PAST FOUR WEEKS
+  Working: 0=no, 1=yes, 6=refused, 8=don't know
+H1EE4
+  HOURS WORKED OUTSIDE HOME IN TYPICAL NON-SUMMER WEEK 
+H1WP11 
+  STUDENT-PERCEIVED MOTHER PARENTAL CONCERN ABOUT COLLEGE
+  Interval
+  ParentConcernM:  1-5;  
+  6=refused,
+  7=noDad 
+  8=don't know, 
+  9=NotApplic
+  1-5. 1 = low concern; 5=high concern
+H1WP16 
+  STUDENT-PERCEIVED FATHER PARENTAL CONCERN ABOUT COLLEGE
+  Interval
+  ParentConcernF: 1-5;  
+  6=refused,
+  7=noDad 
+  8=don't know, 
+  9=NotApplic
+  1-5. 1 = low concern; 5=high concern
+----------------------------------------
+
+## HW02: Literature Review
+
+__Initial thinking__:  I'm interested in the psychological elements of parental influence on respondent expectation to go to college; specifically, whether a common observation holds true that very traditional Latino families, if low-income bracket, expect the older males to work after high school to help the family and siblings--thus a low concern/encouragement to attend college in some cases, at least for a year or two. Female Latinas are less expected to take care of the family in comparison. If so, I theoretically expect adolescent males, especially if they are older, may tend to have lower expectations to attend college at least for a year or two. 
+  Thus, I hypothesize that non-summer working adolescents in high school-if male and especially if also Latino-will report a lower college-expectation score (1-5) [The college-expectation score is based on question, "how likely do you expect to go to college?"]  If it is true that there is an interactive (i.e., conditioning) effect of low parental college concern, then it may imply (absent of unknown spurious explanatory factors) that cultural practice plays a moderating role in the low-income adolescent's expectation to go to college if their parent is not enthusiastic or concerned about college in a pro-education way.  
+
+__H1a__: High concern of parent for college attend, positive assoc with respondant's expectation.
+__H1b__: Disconcern--even antipathy--of parent for college attend, negative assoc with respondent's      expectation.
+__Educational Reproduction__
+__H2a__: Low-income positive association with Working
+__H2b__: High-income negative association with Working ~0hrs
+__H2c__: Middle and high number of hours negative association with college expectation.
+__H2d__: Zero to five hours/week positive association wih college expectation. 
+__SUM Hyp__: Therefore, I will look at the association between number of working hours while in high school and the respondent's expectation to attend college.  The variable of interest is parenting college concern, which mediates the working-in-high-school and expectation-to-go-to-college relationship, especially when conditioned by the intersection of Latino race and Male gender.
+  
+  __Topic of interest__: I am interested in the association between parental college concern and student college-attendance expectation,and how it may be affected by student ethnicity, SES, age, gender, GPA-status, and other factors.   College expectation is much more accurate than college "aspiration" because the term connotes desire and wish; it also reflects moral or social self-identity according to some researchers.  I'm also and how it may be affected by student ethnicity, SES, age, gender, GPA-status, and other factors.   Note: I truly wished to include analysis of respondent's peers' behavior and attitudes, which is  available through related network dataset. It is not feasible to use this nomination-generated friend data.  
+  
+  __MAIN RESEARCH QUESTION__:
+H3 Does Parental College Concern moderate (i.e. strength or direction of association) the negative assocation between working and college expectation among high school students?
+
+__RQ_1__: What is the relationship between respondent non-summer working VS respondent expectation to go to college?  
+__RQ_2__: What is the relationship between parental college concern VS respondent expectation to go to college?
+__RQ-3__: Does parental college concern change relationship? In other words, does low parental concern accentuate the hypothesized association between adolescent-working hours vs college expectation? 
+  
+__How I did it__: Using Codebook of AddHealth_Wave1 literature review via Mendeley, Extensive use of AddHealthW1_CodeBook.pdf
+
+__Literature Review Recap__:Starting with Frank Furstenbur2000), whose authoritative coverage of adolescence research works with Education-core authors and particular works, including, Stanton-Salazar (1997), Pascarelli (1998), Buchmann (1989), Brooks-Gunn & Graber (1994), Steinberg, Lamborn, Darling & Dornbusch (1994), Entwisle & Alexander (1993) and so on.  
+__Final Lit Note__: Based on the literature, I situate the parental effect on students' college expectations within psych/ed/soc journals on family influence.  More specifically, the publications that frame parental influence in theoretical terms of "Social Control via Family Bonding", i.e., Family Attachment.
+<!---
+Unused references:
+   @mccarron2006gap, |
+   @mcdill1965family, 
+   @flint1992parental, 
+   @davis2005influence, 
+   @fisher1999parental, 
+   @dennis2005role, |   
+   @mccarron2006gap|
+   @Ragan2014, |
+-->
+----------------------------------------
+## HW03: Data Subset, Univariate Summaries And Plots
+#### National Longitudinal Adolescent Health Survey: AddHealthW1_CodeBook.pdf
+
+__Direct Variables__
+* `AID`     =  "AID"
+* `BIO_SEX`  = "Gender"
+* `H1GI1M`       = "BirthMonth"
+* `IMONTH`     = "SurveyMonth"
+* `H1GI1Y`      = "BirthYear"
+* `IYEAR`      = "SurveyYear"
+* `IDAY`       = "SurveyDay"
+* `H1GI3`      = "BirthDay"
+* `age`        =  "AddAge"
+* `H1EE1`          = "DesireCollege"
+* `H1EE2`     = "ExpectCollege"
+* `H1EE3`      = "Working"
+* `H1EE4`      = "HoursWorked"
+* `H1WP11`     = "ParentConcernM"
+* `H1WP16`       = "ParentConcernF"
+* `H1GI8`     = "Race"
+* `H1GI6A`  = "White1"
+* `H1GI6B`  = "Black2"
+* `H1GI6C`  = "Native3"
+* `H1GI6D`  = "AsianOth4"
+* `H1GI4`  = "Latino5"
+* `S6A`  = "White"
+* `S6B`  = "Black"
+* `S6C`  = "Asian"
+* `S4`  = "Latino"
+__Composite Variables__
+* `Age` = "Age in years"
+* `ParenConcernMean` = "mean of parents' concern" 
+* `RaceEth` "Race and Ethnicity"
+* `DesireExpectComps` = "Composite of Desire and Expectation to go to College"
+
+```{R, cache = TRUE}
+# Data subset
+
+library(PDS)
+dim(AddHealth) # n=6504
+addhealth <- as.data.frame(AddHealth, stringsAsFactors=FALSE)
+var.list <- c("AID", "H1GI1M"
+            , "IMONTH"     
+            , "H1GI1Y"    
+            , "H1GI3"
+            , "IYEAR"
+            , "IDAY"
+            , "age"
+            , "BIO_SEX"
+            , "H1EE1"
+            , "H1EE2"
+            , "H1EE3"
+            , "H1EE4"
+            , "H1WP11"
+            , "H1WP16"
+            , "H1GI8"    
+            , "H1GI6A" 
+            , "H1GI6B" 
+            , "H1GI6C" 
+            , "H1GI6D" 
+            , "H1GI4" 
+            , "S6A" 
+            , "S6B" 
+            , "S6C" 
+            , "S4"
+            )
+var.list
+# subset of data
+addhealth.sub <- subset(AddHealth, select = var.list)
+#matrix(addhealth.sub)
+#str(addhealth.sub)
+sort(colnames(addhealth.sub))
+addhealth.sub <- addhealth.sub[order(addhealth.sub$AID, decreasing=FALSE),]
+#summary(addhealth.sub)                                                                     
+dim(addhealth.sub)
+```
+
+### Rename
+```{R, cache=TRUE}
+#head(AddHealth)
+# Rename
+# note, if the new "dplyr" package is installed, this may not work correctly
+library(plyr) # for rename(dat, c("from" = "to"))
+addhealth.sub <- rename(addhealth.sub, c(
+                        "AID"        =  "AID"
+                      , "BIO_SEX"        = "Sex"
+                      , "H1GI1M"       = "BirthMonth"
+                      , "IMONTH"     = "SurveyMonth"
+                      , "H1GI1Y"      = "BirthYear"
+                      , "IYEAR"      = "SurveyYear"
+                      , "IDAY"       = "SurveyDay"
+                      , "H1GI3"        = "BirthDay"
+                      , "age"          = "Age"
+                      , "H1EE1"          = "DesireCollege"
+                      , "H1EE2"     = "ExpectCollege"
+                      , "H1EE3"     = "Working"
+                      , "H1EE4"     = "HoursWorked"
+                      , "H1WP11"    = "ParentConcernM"
+                      , "H1WP16"      = "ParentConcernF"
+                      , "H1GI8"    = "Race"
+                      , "H1GI6A" = "White1"
+                      , "H1GI6B" = "Black2"
+                      , "H1GI6C" = "Native3"
+                      , "H1GI6D" = "AsianOth4"
+                      , "H1GI4" = "Latino5"
+                      , "S6A" = "White"
+                      , "S6B" = "Black"
+                      , "S6C" = "Asian"
+                      , "S4" = "Latino"
+                      ))
+
+#str(addhealth.sub)
+```
+
+### Variable Creation
+```{R, cache = TRUE}
+# Variable Creation: RaceEth, Age, [AllParenConcern]
+#install.packages(lubridate)
+library(lubridate)
+
+#Age  Method #0
+DOBYear <- (addhealth.sub$BirthYear + 1900)
+SurvYear <- (addhealth.sub$SurveyYear + 1900)
+AgeYear <- (SurvYear - DOBYear)
+head(AgeYear)
+AgeYearMos <- AgeYear*12
+head(AgeYearMos)
+AgeMonth <- (addhealth.sub$SurveyMonth - addhealth.sub$BirthMonth)
+head(AgeMonth)
+AgeYearsMonths <- AgeYearMos + AgeMonth
+head(AgeYearsMonths)
+Age <- AgeYearsMonths/12
+head(Age)
+addhealth.sub$Age <- Age
+#summary(Age)
+#Age  Method #1
+BirthDayX <-rep(15, 6504)
+addhealth.sub$BirthDayX <- BirthDayX
+date.sub <- subset(addhealth.sub, select = c(SurveyDay, SurveyMonth, SurveyYear, BirthDayX, BirthMonth, BirthYear))
+str(date.sub)
+```
+Combine the date fields together, then interpret them into a date object.
+I'll do this for both the interview date and the date of birth.
+I print the head (first 6 observations) after each operation.
+```{R}
+library(lubridate)
+## interview date
+# combinemonth, and year into one text string
+cdate.text <- paste(date.sub$SurveyDay, date.sub$SurveyMonth, date.sub$SurveyYear)
+head(cdate.text)
+# create date object by interpretting the day, month, year with dmy()
+cdate.date <- dmy(cdate.text)
+head(cdate.date)
+## date of birth
+# combine day, month, and year into one text string
+dob.text <- paste(date.sub$BirthDayX, date.sub$BirthMonth, date.sub$BirthYear)
+head(dob.text)
+dob.date <- dmy(dob.text)
+head(dob.date)
+```
+Now that we have the interview date and date of birth as date objects,
+  we calculate the difference to give the person's age at the time of the interview.
+Because the difference of dates is in the unit "days", we convert to years.
+```{R}
+# difference in days / 365.25 = difference in years
+str(cdate.date)
+age.days <- cdate.date - dob.date
+head(age.days)
+age.years <- as.numeric(age.days / 365.25)  # change from "difftime" to "numeric"
+head(age.years)
+# difference between the age we calculated and the age in the original dataset
+head(age.years - addhealth.sub$Age)
+addhealth.sub$age.years <- age.years
+str(addhealth.sub)
+
+# AgeCat 7 Levels 14 - 20
+AgeCat <- as.factor(addhealth.sub$Age)
+AgeCat <- c(0, 6504)
+AgeCat[addhealth.sub$Age >= 12 & addhealth.sub$Age <= 14] <- 14
+AgeCat[addhealth.sub$Age >= 14 & addhealth.sub$Age <= 15] <- 15
+AgeCat[addhealth.sub$Age >= 15 & addhealth.sub$Age <= 16] <- 16
+AgeCat[addhealth.sub$Age >= 16 & addhealth.sub$Age <= 17] <- 17
+AgeCat[addhealth.sub$Age >= 17 & addhealth.sub$Age <= 18] <- 18
+AgeCat[addhealth.sub$Age >= 18 & addhealth.sub$Age <= 19] <- 19
+AgeCat[addhealth.sub$Age >= 19 & addhealth.sub$Age <= 20] <- 20
+AgeCat <- as.factor(AgeCat)
+class(AgeCat)
+levels(AgeCat)
+summary(AgeCat)
+addhealth.sub$AgeCat <- AgeCat
+```
+
+```{R}
+#RacEth
+#summary(addhealth.sub$White1)
+#summary(addhealth.sub$Black2)
+#summary(addhealth.sub$Native3)
+#summary(addhealth.sub$AsianOth4)
+#summary(addhealth.sub$Latino5)
+RaceEth <-rep(0, 6504)
+RaceEth[addhealth.sub$White1==1 | addhealth.sub$White==1] <- 1
+RaceEth[addhealth.sub$Black2==1 | addhealth.sub$Black==1] <- 2
+RaceEth[addhealth.sub$Native3==1] <- 3
+RaceEth[addhealth.sub$AsianOth4==1 | addhealth.sub$AsianOth4==1] <- 4
+RaceEth[addhealth.sub$Latino5==1 | addhealth.sub$Latino==1] <- 5
+#summary(RaceEth)
+#str(addhealth.sub)
+addhealth.sub$RaceEth <- RaceEth
+
+#MeanParenConcern
+ParenConcernM <-rep(0, 6504)
+ParenConcernM[addhealth.sub$ParentConcernM==1]<-1
+ParenConcernM[addhealth.sub$ParentConcernM==2]<-2
+ParenConcernM[addhealth.sub$ParentConcernM==3]<-3
+ParenConcernM[addhealth.sub$ParentConcernM==4]<-4
+ParenConcernM[addhealth.sub$ParentConcernM==5]<-5
+#summary(ParenConcernM)
+
+ParenConcernF <-rep(0, 6504)
+ParenConcernF[addhealth.sub$ParentConcernF==1]<-1
+ParenConcernF[addhealth.sub$ParentConcernF==2]<-2
+ParenConcernF[addhealth.sub$ParentConcernF==3]<-3
+ParenConcernF[addhealth.sub$ParentConcernF==4]<-4
+ParenConcernF[addhealth.sub$ParentConcernF==5]<-5
+#summary(ParenConcernF)
+
+ParenConcernMean <- ((ParenConcernF + ParenConcernM)/2)
+
+summary(ParenConcernMean)  
+#str(ParenConcernMean)
+addhealth.sub$ParenConcernMean <- ParenConcernMean 
+dim(addhealth.sub)
+
+#
+#Binary Parental College Concern  High Parental Concern
+length(addhealth.sub$ParenConcernMean)
+levels(addhealth.sub$ParenConcernMean)
+summary(addhealth.sub$ParenConcernMean)
+head(addhealth.sub$ParenConcernMean)
+dim(addhealth.sub)
+
+HighParenCollConcern <- rep(NA, 6504)
+table(ParenConcernMean)
+HighParenCollConcern[addhealth.sub$ParenConcernMean == 0 | addhealth.sub$ParenConcernMean == .5 | addhealth.sub$ParenConcernMean == 1 | addhealth.sub$ParenConcernMean
+== 1.5 | addhealth.sub$ParenConcernMean == 2 | addhealth.sub$ParenConcernMean == 2.5 |
+addhealth.sub$ParenConcernMean == 3 |
+  addhealth.sub$ParenConcernMean == 3.5 
+] <- 0
+HighParenCollConcern[addhealth.sub$ParenConcernMean == 4 | addhealth.sub$ParenConcernMean
+== 4.5 | addhealth.sub$ParenConcernMean == 5 
+] <- 1
+
+summary(addhealth.sub$HighParenCollConcern)
+addhealth.sub$HighParenCollConcern <- HighParenCollConcern
+addhealth.sub$HighParenCollConcern <- factor(addhealth.sub$HighParenCollConcern)
+str(addhealth.sub$HighParenCollConcern)
+summary(HighParenCollConcern)
+head(HighParenCollConcern)
+
+#### addhealth.sub$Studen_
+ 
+# create a factor variable based on number of cigarettes smoked
+#workHighparen
+str(addhealth.sub$HighParenCollConcern)
+str(addhealth.sub$Working)
+Studen <- NA
+head(addhealth.sub$Working)
+levels(addhealth.sub$Working)
+levels(addhealth.sub$HighParenCollConcern)
+head(addhealth.sub$HighParenCollConcern)
+Studen[(addhealth.sub$Working == 0) & (addhealth.sub$HighParenCollConcern == 1)] <- 1 # "Non-working, high parent"
+Studen[(addhealth.sub$Working == 0) & (addhealth.sub$HighParenCollConcern == 0)] <- 2 # "Non-working, low parent"
+Studen[(addhealth.sub$Working == 1) & (addhealth.sub$HighParenCollConcern == 1)] <- 3 # "working, high parent"
+levels(addhealth.sub$HighParenCollConcern)
+summary(addhealth.sub$HighParenCollConcern)
+summary(addhealth.sub$Working)
+levels(addhealth.sub$Working)
+Studen[(addhealth.sub$Working == 1) & (addhealth.sub$HighParenCollConcern == 0)] <- 4 # "working, low parent"
+addhealth.sub$Studen <- Studen
+addhealth.sub$Studen <- factor(addhealth.sub$Studen)
+summary(addhealth.sub$Studen)
+addhealth.sub$Studen
+# only keep the variables we'll analyze
+summary(addhealth.sub$Studen)
+```
+
+##
+```
+## Variable for the person's age in years  based on the person's date of birth and the interview date.
+There is an `AGE` variable which I'm already using,  but if there wasn't, or I wanted to be more precise about their age (such as, 24.34 years old),
+  then this is a way to do it.
+I'm going to create a separate data frame just for this example to show how to do it;
+  if you needed these variables, they should be part of your original subset above.
+Below, the "C" variables (`CDAY`) are the interview day, month, and year,
+  and the "DOB" variables (`DOBD`) are the date of birth dat, month, and year.
+
+### Coding missing values
+```{R, cache = TRUE}
+# First, replace any values that are "NA" with 0 (NA indicates 0 or 100+, so I'm going to code as 0)
+#Sex
+#str(addhealth.sub$Sex)
+#summary(addhealth.sub$Sex)
+#addhealth.sub$Sex[addhealth.sub$Sex == NA] <- 0
+# Next, replace any values that are "6" with NA
+addhealth.sub$Sex[addhealth.sub$Sex == 6] <- NA
+summary(addhealth.sub$Sex)
+# Then drop unused factor categories.
+addhealth.sub$Sex <- factor(addhealth.sub$Sex)[, drop = TRUE]
+summary(addhealth.sub$Sex)
+
+#DesireCollege
+#str(addhealth.sub$DesireCollege)
+#summary(addhealth.sub$DesireCollege)
+#addhealth.sub$DesireCollege[addhealth.sub$DesireCollege == NA] <- 0
+addhealth.sub$DesireCollege[addhealth.sub$DesireCollege == 6] <- NA
+addhealth.sub$DesireCollege[addhealth.sub$DesireCollege == 8] <- NA
+#summary(addhealth.sub$DesireCollege)
+addhealth.sub$DesireCollege <- factor(addhealth.sub$DesireCollege)[, drop = TRUE]
+summary(addhealth.sub$DesireCollege)
+
+#ExpectCollege
+str(addhealth.sub$ExpectCollege)
+summary(addhealth.sub$ExpectCollege)
+#addhealth.sub$ExpectCollege[addhealth.sub$ExpectCollege == NA] <- 0
+addhealth.sub$ExpectCollege[addhealth.sub$ExpectCollege == 6] <- NA
+addhealth.sub$ExpectCollege[addhealth.sub$ExpectCollege == 8] <- NA
+#summary(addhealth.sub$ExpectCollege)
+addhealth.sub$ExpectCollege <- factor(addhealth.sub$ExpectCollege)[, drop = TRUE]
+summary(addhealth.sub$ExpectCollege)
+
+#ParentConcernM
+#str(addhealth.sub$ParentConcernM)
+#summary(addhealth.sub$ParentConcernM)
+#addhealth.sub$ParentConcernM[addhealth.sub$ParentConcernM == NA] <- 0
+addhealth.sub$ParentConcernM[addhealth.sub$ParentConcernM == 6] <- NA
+addhealth.sub$ParentConcernM[addhealth.sub$ParentConcernM == 7] <- NA
+addhealth.sub$ParentConcernM[addhealth.sub$ParentConcernM == 8] <- NA
+addhealth.sub$ParentConcernM[addhealth.sub$ParentConcernM == 9] <- NA
+#summary(addhealth.sub$ParentConcernM)
+addhealth.sub$ParentConcernM <- factor(addhealth.sub$ParentConcernM)[, drop = TRUE]
+summary(addhealth.sub$ParentConcernM)
+
+#ParentConcernF
+#str(addhealth.sub$ParentConcernF)
+#summary(addhealth.sub$ParentConcernF)
+#addhealth.sub$ParentConcernF[addhealth.sub$ParentConcernF == NA] <- 0
+addhealth.sub$ParentConcernF[addhealth.sub$ParentConcernF == 6] <- NA
+addhealth.sub$ParentConcernF[addhealth.sub$ParentConcernF == 7] <- NA
+addhealth.sub$ParentConcernF[addhealth.sub$ParentConcernF == 8] <- NA
+addhealth.sub$ParentConcernF[addhealth.sub$ParentConcernF == 9] <- NA
+summary(addhealth.sub$ParentConcernF)
+addhealth.sub$ParentConcernF <- factor(addhealth.sub$ParentConcernF)[, drop = TRUE]
+summary(addhealth.sub$ParentConcernF)
+
+#ParenConcernMean
+str(addhealth.sub$ParenConcernMean)
+summary(addhealth.sub$ParenConcernMean)
+addhealth.sub$ParenConcernMean[addhealth.sub$ParenConcernMean == 0] <- NA
+addhealth.sub$ParenConcernMean <- (addhealth.sub$ParenConcernMean)[, drop = TRUE]
+str(addhealth.sub$ParenConcernMean)
+str(addhealth.sub$ParentConcernM)
+
+#Working
+#str(addhealth.sub$Working)
+#summary(addhealth.sub$Working)
+addhealth.sub$Working[addhealth.sub$Working == 6] <- NA
+addhealth.sub$Working[addhealth.sub$Working == 8] <- NA
+addhealth.sub$Working <- factor(addhealth.sub$Working)[, drop = TRUE]
+#summary(addhealth.sub$Working)
+levels(addhealth.sub$Studen)
+#str(addhealth.sub$Studen)
+summary(addhealth.sub$Studen)
+addhealth.sub$Studen[addhealth.sub$Studen == 6] <- NA
+addhealth.sub$Studen[addhealth.sub$Studen == 8] <- NA
+addhealth.sub$Studen <- factor(addhealth.sub$Studen)[, drop = TRUE]
+summary(addhealth.sub$Studen)
+
+#HoursWorked
+#str(addhealth.sub$HoursWorked)
+#summary(addhealth.sub$HoursWorked)
+#addhealth.sub$HoursWorked[addhealth.sub$HoursWorked == NA] <- 0
+addhealth.sub$HoursWorked[addhealth.sub$HoursWorked >= 50] <- NA
+addhealth.sub$HoursWorked[addhealth.sub$HoursWorked == 996] <- NA
+addhealth.sub$HoursWorked[addhealth.sub$HoursWorked == 998] <- NA
+addhealth.sub$HoursWorked[addhealth.sub$HoursWorked == 999] <- NA
+#summary(addhealth.sub$HoursWorked)
+
+# HoursWorkedCat
+str(addhealth.sub$HoursWorked)
+addhealth.sub$HoursWorkedCat[addhealth.sub$HoursWorked >= 0 & addhealth.sub$HoursWorked <= 0] <- 0
+addhealth.sub$HoursWorkedCat[addhealth.sub$HoursWorked >= 1 & addhealth.sub$HoursWorked <= 5] <- 5
+addhealth.sub$HoursWorkedCat[addhealth.sub$HoursWorked >= 6 & addhealth.sub$HoursWorked <= 10] <- 10
+addhealth.sub$HoursWorkedCat[addhealth.sub$HoursWorked >= 11 & addhealth.sub$HoursWorked <= 15] <- 15
+addhealth.sub$HoursWorkedCat[addhealth.sub$HoursWorked >= 16 & addhealth.sub$HoursWorked <= 20] <- 20
+addhealth.sub$HoursWorkedCat[addhealth.sub$HoursWorked >= 21 & addhealth.sub$HoursWorked <= 25] <- 25
+addhealth.sub$HoursWorkedCat[addhealth.sub$HoursWorked >= 26 & addhealth.sub$HoursWorked <= 30] <- 30
+addhealth.sub$HoursWorkedCat[addhealth.sub$HoursWorked >= 31 & addhealth.sub$HoursWorked <= 35] <- 35
+addhealth.sub$HoursWorkedCat[addhealth.sub$HoursWorked >= 36 & addhealth.sub$HoursWorked <= 40] <- 40
+addhealth.sub$HoursWorkedCat[addhealth.sub$HoursWorked >= 41 & addhealth.sub$HoursWorked <= 45] <- 45
+
+addhealth.sub$HoursWorkedCat[addhealth.sub$HoursWorked >= 46 & addhealth.sub$HoursWorked <= 50] <- 50
+summary(addhealth.sub$HoursWorkedCat)
+summary(addhealth.sub$HoursWorked)
+
+# HoursWorkedLog   
+addhealth.sub$HoursWorkedL <- (addhealth.sub$HoursWorkedCat + 1)
+addhealth.sub$HoursWorkedLog <- log(addhealth.sub$HoursWorkedL)
+summary(addhealth.sub$HoursWorkedLog)
+
+#RaceEth
+addhealth.sub$RaceEth[addhealth.sub$RaceEth == 0] <- NA
+addhealth.sub$RaceEth <- factor(addhealth.sub$RaceEth)[, drop = TRUE]
+#summary(addhealth.sub$RaceEth)
+
+#Age
+str(addhealth.sub$Age)
+summary(addhealth.sub$Age)
+addhealth.sub$Age[addhealth.sub$Age >= 20] <- NA
+addhealth.sub$Age[addhealth.sub$Age <= 12] <- NA
+addhealth.sub$Age <- (addhealth.sub$Age)[, drop = TRUE]
+str(addhealth.sub$Age)
+summary(addhealth.sub$Age)
+
+#DesireCollege *, Made numeric !!!!! n= 6504
+DesireCollegeNum <-rep(0, 6504)
+DesireCollegeNum[addhealth.sub$DesireCollege == 1] <- 1
+DesireCollegeNum[addhealth.sub$DesireCollege == 2] <- 2
+DesireCollegeNum[addhealth.sub$DesireCollege == 3] <- 3
+DesireCollegeNum[addhealth.sub$DesireCollege == 4] <- 4
+DesireCollegeNum[addhealth.sub$DesireCollege == 5] <- 5
+addhealth.sub$DesireCollegeNum <- DesireCollegeNum
+#str(addhealth.sub$DesireCollegeNum)
+dim(addhealth.sub)
+str(addhealth.sub$DesireCollegeNum)
+str(addhealth.sub$ExpectCollegeNum)
+#summary(addhealth.sub)
+summary(addhealth.sub$ExpectCollege)
+summary(addhealth.sub$ExpectCollegeNum)
+is.numeric(addhealth.sub$ExpectCollegeNum)
+#ExpectCollege Made numeric
+ExpectCollegeNum <- rep(0, 6504)
+ExpectCollegeNum[addhealth.sub$ExpectCollege == 1] <- 1
+ExpectCollegeNum[addhealth.sub$ExpectCollege == 2] <- 2
+ExpectCollegeNum[addhealth.sub$ExpectCollege == 3] <- 3
+ExpectCollegeNum[addhealth.sub$ExpectCollege == 4] <- 4
+ExpectCollegeNum[addhealth.sub$ExpectCollege == 5] <- 5
+addhealth.sub$ExpectCollegeNum <- ExpectCollegeNum
+is.numeric(addhealth.sub$ExpectCollegeNum)
+#str(addhealth.sub$ExpectCollegeNum)
+dim(addhealth.sub)
+#summary(addhealth.sub)
+plot(addhealth.sub$ExpectCollegeNum)
+ExpectDesireColl <- (ExpectCollegeNum + DesireCollegeNum)/2
+addhealth.sub$ExpectDesireColl <- ExpectDesireColl
+#str(addhealth.sub$ExpectDesireColl)
+dim(addhealth.sub)
+addhealth.sub <- na.omit(addhealth.sub)
+dim(addhealth.sub)
+```
+#### Final subset of Dataset is free of missing variables, Final dim(2905,35);original=6,504;
+
+### Labeling Variables
+```{R, cache = TRUE}
+# Labeling Variables
+#install.packages("Hmisc")
+library(Hmisc) # for label()
+label(addhealth.sub$AID) <- "Unique ID no alphabetics"
+#label(addhealth.sub$Sex) <- "Gender"
+label(addhealth.sub$BirthMonth)     <- "Birth month, two digits"
+label(addhealth.sub$BirthYear)       <- "Birth year, two digits"
+label(addhealth.sub$DesireCollege) <- "Desire to go to college"
+label(addhealth.sub$DesireCollegeNum) <- "Desire to go to college-Numeral"
+label(addhealth.sub$ExpectCollege)     <- "Expectation to go to college"
+label(addhealth.sub$ExpectCollegeNum)     <- "Expectation to go to college-Numeral"
+label(addhealth.sub$Working)       <- "Whether worked in past four weeks"
+label(addhealth.sub$HoursWorked)   <- "Non-summer hours worked per week"
+label(addhealth.sub$ParentConcernM)       <- "Mother's Concern about College Attend."
+label(addhealth.sub$ParentConcernF)   <- "Father's Concern about College Attend."
+label(addhealth.sub$ExpectDesireColl)   <- "Composite of college desire and expectation"
+label(addhealth.sub$RaceEth)   <- "Race-Ethnicity"
+label(addhealth.sub$HoursWorkedCat)   <- "Hours Worked Category"
+label(addhealth.sub$HoursWorkedLog)   <- "Hours Worked Log"
+label(addhealth.sub$ParenConcernMean)   <- "Mean Parental Concern"
+label(addhealth.sub$HighParenCollConcern)   <- "High Parental College Concern"
+label(addhealth.sub$Studen)   <- "Quadrant of Four Groups by Level"
+# Informative Labels
+str(addhealth.sub$Sex)
+addhealth.sub$Sex <- factor(addhealth.sub$Sex
+                       , labels = c("Male"
+                                  , "Female"
+                                   )
+                        )
+str(addhealth.sub$Sex)
+
+
+# High Parental College Conern
+str(addhealth.sub$HighParenCollConcern)
+addhealth.sub$HighParenCollConcern <- factor(addhealth.sub$HighParenCollConcern
+                       , labels = c("Low Concern"
+                                  , "High Concern"
+                                   )
+                        )
+str(addhealth.sub$HighParenCollConcern)
+## High Parental College Conern
+str(addhealth.sub$Studen)
+addhealth.sub$Studen <- factor(addhealth.sub$Studen
+                       , labels = c("High Concern,Not Work"
+                                  , "Low Concern,Not Work" 
+                                  ,  "High Concern,Work"
+                                  , "Low Concern,Work"
+                                   )
+                        )
+str(addhealth.sub$HighParenCollConcern)
+#
+str(addhealth.sub$RaceEth)
+#addhealth.sub$RaceEth <- is.character(addhealth.sub$RaceEth)
+addhealth.sub$RaceEth <- factor(addhealth.sub$RaceEth, labels = c("White", "Black", "Native", "Asian", "Latino" ))
+str(addhealth.sub$RaceEth)
+table(addhealth.sub$RaceEth)
+#Working
+table(addhealth.sub$Working)
+addhealth.sub$Working <- factor(addhealth.sub$Working, labels = c("Not Working", "Working") )
+table(addhealth.sub$Working)
+```
+
+### Mixed Rules
+```{R, cache = TRUE}
+# Mixed Rules
+#install.packages("editrules")
+fn.edit.rules <- "C:/Users/thoma/Creative Cloud Files/__ADA1/ADA1_Content/NouvelleALLHW09_ANOVA/ADA1_AddhealthTM_EditRules.txt"
+readLines(fn.edit.rules)
+
+# Encode these rules using the editrules package
+library(editrules)
+EditRules.AH.sub <- editfile(fn.edit.rules)
+EditRules.AH.sub
+ve.AH.sub <- violatedEdits(EditRules.AH.sub, addhealth.sub)
+summary(ve.AH.sub)
+#? Why no violations?
+```
+
+```{R, cache = TRUE}
+op <- par(no.readonly = TRUE)         # save plot settings
+par(mfrow=c(1,1), mar = c(0,0,0,0))
+plot(EditRules.AH.sub)
+par(op)                               # restore plot settings
+dim(addhealth.sub)
+#summary(addhealth.sub)
+```
+
+# HW 04
+```{R, cache = TRUE}
+library(ggplot2)
+#p1 <- ggplot(data = addhealth.sub, #aes(x = Sex))
+#p1 <- p1 + geom_bar()
+#p1
+p1a <- ggplot(data = addhealth.sub, aes(x = HoursWorkedCat))
+p1a <- p1a + geom_bar(binwidth = 5)
+p1a
+
+p1a <- ggplot(data = addhealth.sub, aes(x = HoursWorkedLog))
+p1a <- p1a + geom_bar(binwidth = .75)
+p1a
+
+p2 <- ggplot(data = addhealth.sub, aes(x = DesireCollegeNum))
+p2 <- p2 + geom_bar(binwidth = 1)
+p2
+
+p2a <- ggplot(data = addhealth.sub, aes(x = ExpectCollegeNum))
+p2a <- p2a + geom_bar(binwidth = 1)
+p2a
+
+library(ggplot2)
+p <- ggplot(addhealth.sub, aes(x = Age, y = ExpectCollegeNum))
+p <- p + geom_point(position = position_jitter(width=0.3), colour = "orange")
+p <- p + stat_smooth(method = lm, se = FALSE) +  theme_bw()
+p <- p + facet_wrap(Sex ~ RaceEth)
+p <- p + labs(title = "Age versus College Expectation,\n by Gender and Race")
+print(p)
+library(ggplot2)
+p <- ggplot(addhealth.sub, aes(x = Age, y = ExpectCollegeNum))
+p <- p + geom_point(position = position_jitter(width=0.3), colour = "orange")
+p <- p + stat_smooth(method = lm, se = FALSE) +  theme_bw()
+p <- p + facet_wrap(Working ~ RaceEth)
+p <- p + labs(title = "Age versus College Expectation,\n by Working Status and Race")
+print(p)
+```
+
+```{R}
+library(ggplot2)
+p <- ggplot(addhealth.sub, aes(x = ParenConcernMean, y = ExpectCollegeNum))
+p <- p + geom_point(position = position_jitter(width=0.3), colour = "grey")
+p <- p + stat_smooth(method = lm, se = FALSE) +  theme_bw()
+p <- p + facet_wrap(Working ~ RaceEth)
+p <- p + labs(title = "Parental Concern versus College Expectation,\n by Working Status and Race")
+print(p)
+```
+
+```{R}
+print(p)
+library(ggplot2)
+p <- ggplot(addhealth.sub, aes(x = HoursWorkedCat, y = ExpectCollegeNum))
+p <- p + geom_point(position = position_jitter(width=1), colour = "grey")
+p <- p + stat_smooth(method = lm, se = FALSE) +  theme_grey()
+p <- p + facet_wrap(Sex ~ RaceEth)
+p <- p + labs(title = "Hours Worked versus College Expectation,\n by Gender and Race")
+print(p)
+```
+```{R}
+library(ggplot2)
+p <- ggplot(addhealth.sub, aes(x = HoursWorkedLog, y = ExpectCollegeNum))
+p <- p + geom_point(position = position_jitter(width=0.3))
+p <- p + stat_smooth(method = lm, se = FALSE) +  theme_bw()
+p <- p + facet_wrap(Sex ~ RaceEth)
+p <- p + labs(x = "Hours Worked", y = "Expectation to Attend College", title = "Hours Worked versus Expectation to attend College,\n by Genders and Age")
+print(p)
+```
+```{R}
+library(ggplot2)
+p <- ggplot(addhealth.sub, aes(x = ParenConcernMean, y = ExpectCollegeNum))
+p <- p + geom_point(position = position_jitter(width=0.1))
+p <- p + stat_smooth(method = lm, se = FALSE) 
+p <- p + facet_wrap(Sex ~ RaceEth)
+p <- p + labs(title = "Parental Concern, Expectation to attend College, by Gender and Race")
+print(p)
+```
+### The results fundamentally contradict the initial hypotheses that  not only proved wrong, but the exact opposite is convincingly demonstrated: Hispanic Males' college expectations remain high despite low parental concern, and their expectations increase with more hours worked (contrary to all other groups). Therefore, the null hypothesis is rejected--not for the expected reason--and further, a new alternative hypothesis presents itself: White Males are highly sensitive to parental college concerns, and their expectations actually decrease with more hours worked (contary to Latinos). 
+### Also, at a closer look, the norm among all groups is to decrease expectations for increasing hours working. Yet, Latino males and females increase expectation. 
+----------------------------------------
+
+### Bivariate graphs (both categorical)
+#### In the following scenario, Females (2) are compared to Males (1) in their expectations to attend college
+
+```{R, cache = TRUE}
+g1 <- ggplot(data = addhealth.sub, aes(x = Sex, fill = ExpectCollege)) +
+  geom_bar(position = "fill") +
+  theme_bw()
+g1 <- g1 + facet_wrap(~RaceEth)
+g1 <- g1 + labs(x = "Gender", y = "Proportion", title = "Expectation to Go to College\n comparing Males and Females, by Race") +
+  scale_fill_discrete(name="Expectation\n to go to \nCollege")
+g1
+#EBE
+# ylab
+
+
+g1a <- ggplot(data = addhealth.sub, aes(x = Sex, fill = DesireCollege)) +
+  geom_bar(position = "fill") +
+  theme_bw()
+g1a <- g1a + facet_wrap(~ RaceEth)
+g1a
+#EBE
+# ylab
+summary(ParenConcernMean)
+g1b <- ggplot(data = addhealth.sub, aes(x = Sex, fill = ParentConcernM)) +
+  geom_bar(position = "fill") +
+  theme_bw()
+g1b <- g1b + facet_wrap(~ RaceEth)
+g1b
+```
+
+```{R, cache = TRUE}
+g1 + labs(x = "Gender", y = "Proportion", title = "Expectation to Go to College\n comparing Males and Females") +
+  scale_fill_discrete(name="Expectation to go to College\nGender")
+```
+
+```{R, cache = TRUE}
+##EBE
+#T2 <- xtabs(~ExpectCollege + HoursWorkedCat, data = addhealth.sub)
+#T2
+#PT2 <- prop.table(T2, 2)
+#PT2
+#barplot(PT2)
+
+g2 <- ggplot(data = na.omit(addhealth.sub), aes(x = HoursWorkedCat, fill = ExpectCollege)) +
+  geom_bar(position = "fill") +
+  theme_bw() +
+  theme(axis.text.x  = element_text(angle = 45, vjust = 0.5)) +
+  labs(x = "Hours Worked", y = "Expect College")
+g2
+# This graph below is very telling because the question of "desiring to go to college" is less grounded in realistic responses about anticipated future events. So, desire should be less correlated with the real-world measure of working hours. Desire, in the literature cited above, often implies the respondent's self-identity, or even the attitude of his/her peers regardless of real-world constraints.)
+g2a <- ggplot(data = na.omit(addhealth.sub), aes(x = HoursWorked, fill = DesireCollege)) +
+  geom_bar(position = "fill") +
+  theme_bw() +
+  theme(axis.text.x  = element_text(angle = 45, vjust = 0.5)) +
+  labs(x = "Hours Worked", y = "Desire College")
+g2a
+
+#This graph below is meaningful if working males are more coerced by money and family needs (thus expect college less--a more grounded, realistic survey response to questions about the future.) and females are less coerced (eg, work for social reasons and still expect college)
+ g3 <- g2 + facet_grid(Sex ~ .) +
+  theme(axis.text.x  = element_text(angle = 85, vjust = 0.5)) +
+  labs(x = "", y = "", title = "Hours Worked\n Hours Worked by Gender") +
+  scale_fill_discrete(name="Expectation to attend College\nBy Gender")
+ g3
+#This is meaningful if working males are more coerced by money needs (thus expect college less) and females are less coerced (eg, work for social reasons and still expect college)
+ #EBE (a version of the plot above)
+#library(ggplot2)
+#ggplot(data = na.omit(addhealth.sub), aes(x = HoursWorked, fill = ExpectCollege)) +
+#  geom_bar(position = "fill") +
+#  theme_bw() +
+#  theme(axis.text.x  = element_text(angle = 45, vjust = 0.5)) +
+#  labs(x = "Hours Worked", y = "Expectation of College") +
+#  facet_grid(Sex ~ .)
+
+```
+##### My personal interpretation of this graph is that the more hours worked, less expectation to attend college. This association is accentuated by male gender.
+
+#### Hours Worked versus Expectation to Attend College, Conditioned by Gender and Parental College Concern (1-5)
+```{R, cache = TRUE}
+ggplot(data = na.omit(addhealth.sub), aes(x = HoursWorkedCat, fill = ExpectCollege)) +
+  geom_bar(position = "fill") +
+  theme_bw() + facet_grid(Sex ~ ParentConcernM) +
+  theme(axis.text.x  = element_text(angle = 85, vjust = 1)) +
+  geom_histogram(binwidth = 80) +
+  labs(x = "Hours Worked", y = "Proportion of \bthose Expecting College", title = "Hours Worked versus \n Expectation to Attend College, \n Conditioned by Gender and *pictured below*, \n Parental College Concern 1-5") +
+  scale_fill_discrete(name="Student's \nExpectation to \nAttend College")
+```
+##### My personal intepretation of this tells me that Males (1) are less likely to expect college than females (2), generally speaking. Those working more hours expect to go to college to a lesser degree, and moreso males than females in this respect.  Finally, Looking at parental concern, it has a large effect on expectation to go to college.
+
+
+## HW05 __ Log Transformation and Simple Linear Regression
+```{R, cache = TRUE}
+#Scatterplot
+library(ggplot2)
+p1 <- ggplot(addhealth.sub, aes(x=HoursWorkedLog, y=ExpectCollegeNum))
+p1 <- p1 + geom_point(position = position_jitter(width=0.3))
+p1 <- p1 + geom_smooth(method = lm, se = FALSE)
+p1 <- p1 + labs(x = "Hours worked - logged", y = "Expectation to attend College", title="Hours Worked-Logged versus \n expectation to attend college")
+print(p1)
+
+#Just out of curiosity, work hours var is logged. 
+library(ggplot2)
+p1a <- ggplot(addhealth.sub, aes(x=HoursWorkedLog, y=ExpectCollegeNum))
+p1a <- p1a + geom_point(position = position_jitter(width=0.3))
+p1a <- p1a + geom_smooth(method = lm, se = FALSE)
+p1a <- p1a + labs(x = "Hours worked - logged", y = "Expectation to attend College", title="Hours Worked-Logged versus \n expectation to attend college")
+print(p1a)
+
+# Both variables are transform-logged
+ParenConcernMeanLog <- log10(addhealth.sub$ParenConcernMean)
+ExpectCollegeNumLog <- log10(addhealth.sub$ExpectCollegeNum)
+p2 <- ggplot(addhealth.sub, aes(x=ParenConcernMeanLog, y=ExpectCollegeNumLog))
+p2 <- p2 + geom_point(position = position_jitter(width=.6))
+p2 <- p2 + geom_smooth(method = lm, se = FALSE)
+p2 <- p2 + labs(x = "Parental Concern - logged", y = "Expectation to attend College log", title="Parental Concern -Logged versus \n expectation to attend college")
+print(p2)
+
+# Y variables are transform-logged
+p3 <- ggplot(addhealth.sub, aes(x=Age, y=ExpectCollegeNumLog))
+p3 <- p3 + geom_point(position = position_jitter(width=0.1))
+p3 <- p3 + geom_smooth(method = lm, se = FALSE)
+p3 <- p3 + labs(x = "Age", y = "Expectation to attend College log", title="Parental Concern versus \n expectation to attend college - log")
+print(p3)
+
+# Y variables are transform-logged
+p4 <- ggplot(addhealth.sub, aes(x=ParenConcernMean, y=ExpectCollegeNumLog))
+p4 <- p4 + geom_point(position = position_jitter(width=0.1))
+p4 <- p4 + geom_smooth(method = lm, se = FALSE)
+p4 <- p4 + labs(x = "Parental College Concern", y = "Expectation to attend College log", title="Expectation to attend College log versus \n Parental College Concern")
+print(p4)
+
+# fit the simple linear regression model, Expectation regressed on hours worked
+lm.ExpectCollegeNum.ParenConcernMean <- lm(ExpectCollegeNum ~ ParenConcernMean, data = addhealth.sub)
+# use summary() to parameters estimates (slope, intercept) and other summaries
+summary(lm.ExpectCollegeNum.ParenConcernMean)
+
+# fit the simple linear regression model Expectation regressed on hours worked
+lm.ExpectCollegeNum.HoursWorkedCat <- lm(ExpectCollegeNum ~ HoursWorkedCat, data = addhealth.sub)
+# use summary() to parameters estimates (slope, intercept) and other summaries
+summary(lm.ExpectCollegeNum.HoursWorkedCat)
+
+# fit the simple linear regression model Expectation regressed on Age
+lm.ExpectCollegeNum.Age <- lm(ExpectCollegeNum ~ Age, data = addhealth.sub)
+# use summary() to parameters estimates (slope, intercept) and other summaries
+summary(lm.ExpectCollegeNum.Age)
+
+#install.packages("gsheet")
+#install.packages("GGally")
+summary(addhealth.sub)
+library(gsheet)
+library(ggplot2)
+library(GGally)
+p <- ggplot(addhealth.sub, aes(x = HoursWorkedCat, y = ExpectCollegeNum))
+p <- p + geom_jitter(position = position_jitter(height = 0.1), alpha = 1/4)
+print(p)
+
+```
+
+
+## HW 06 
+###Correlation and Categorical Contingencies
+```{R, cache = TRUE}
+#install.packages("gsheet")
+library(gsheet)
+library(ggplot2)
+#install.package(GGally)
+library(GGally)
+
+p11 <- ggpairs(addhealth.sub[,c("RaceEth", "ExpectCollege", "ParentConcernM")]
+            , colour = "RaceEth"
+            , lower = list(continuous = "smooth")
+            , diag  = list(continuous = "density")
+            , upper = list(params = list(corSize = 6))
+            )
+print(p11)
+p11a <- ggpairs(addhealth.sub[,c("Working", "ExpectCollege", "ParentConcernM")]
+            , colour = "Working"
+            , lower = list(continuous = "smooth")
+            , diag  = list(continuous = "density")
+            , upper = list(params = list(corSize = 6))
+            )
+print(p11a)
+p12a <- ggpairs(addhealth.sub[,c("RaceEth", "HoursWorkedCat", "ExpectCollege")]
+            , colour = "RaceEth"
+            , lower = list(continuous = "smooth")
+            , diag  = list(continuous = "density")
+            , upper = list(params = list(corSize = 6))
+            )
+print(p12a)
+#
+p11 <- ggpairs(addhealth.sub[,c("Sex", "ExpectCollege", "ParentConcernM")]
+            , colour = "Sex"
+            , lower = list(continuous = "smooth")
+            , diag  = list(continuous = "density")
+            , upper = list(params = list(corSize = 6))
+            )
+print(p11)
+p11a <- ggpairs(addhealth.sub[,c("Working", "ExpectCollege", "ParentConcernM")]
+            , colour = "Working"
+            , lower = list(continuous = "smooth")
+            , diag  = list(continuous = "density")
+            , upper = list(params = list(corSize = 6))
+            )
+print(p11a)
+p12 <- ggpairs(addhealth.sub[,c("Sex", "Working", "ExpectCollege")]
+            , colour = "Sex"
+            , lower = list(continuous = "smooth")
+            , diag  = list(continuous = "density")
+            , upper = list(params = list(corSize = 6))
+            )
+print(p12)
+p12a <- ggpairs(addhealth.sub[,c("Working", "ParentConcernM", "ExpectCollege")]
+            , colour = "Working"
+            , lower = list(continuous = "smooth")
+            , diag  = list(continuous = "density")
+            , upper = list(params = list(corSize = 6))
+            )
+print(p12a)
+```
+## HW 06
+1. With your previous (or new) bivariate scatter plot, calculate the correlation and interpret.
+    * (1 p) plot is repeated here or the plot is referenced an easy to find from a plot above,
+    * (1 p) correlation is calculated,
+    * (2 p) correlation is interpretted (direction, strength of LINEAR relationship).
+#### 
+### Combined correlation between parental college concern and student's expectation to attend college is .321;This implies that there is a positive relationship, albeit weak correlation. The correlation is stronger for males at .357 than females at .29. This is expected according to the theory that Parental influence is associated with College expectation. 
+### Next, the same relationship (corr = .321) is compared by working status. The correlation is stronger for those working (.339) than those not working (.301)
+### Next, expectation to attend college 
+
+#### Why is there a difference in the strength of the correlation for everyone compared to either gender separately?  
+#####Although the scale is smaller by gender, the correlative association is almost identical at ~.55 or ~.56, Doubling N, leads to combined much stronger .765.  
+
+2. With your previous (or new) two- or three-variable categorical plot, calculate conditional proportions and interpret.
+    * (1 p) frequency table of variables is given,
+          * It appears that interestingly it is 
+    * (2 p) conditional proportion tables are calculated of the outcome variable conditional on one or two other variables,
+    * (1 p) a well-labelled plot of the proportion table is given,
+    * (2 p) the conditional proportions are interpretted and compared between conditions.
+         The tables are less helpful but begin to provide some interesting results in that Expectation to attend college is only a little stronger among those not working.  Similarly it is extremely important to find that there are plenty of self-defining "non-working" students that actually log up to 10 hours working...so now I may have to consider making a subset of specifically working or non-working students. By race, it becomes evident that Natives are much more sensitive to their parents' concern about college at lower levels while White students much less so. 
+---
+*The above plot reveals corelation as .318 between College Expectation and Mean Parental Concern
+```{R, cache = TRUE}
+# Plot the data using ggplot and ggpairs
+library(ggplot2)
+library(GGally)
+p2 <- ggpairs(addhealth.sub[,c("ExpectCollegeNum", "ParenConcernMean")]
+            #, colour = "RaceEth"
+            #, shape = ""
+            , lower = list(continuous = "smooth")
+            , diag  = list(continuous = "density")
+            , upper = list(params = list(corSize = 6))
+            )
+print(p2)
+```
+### HW 06 Part II
+```{R, cache = TRUE}
+library(ggplot2)
+p <- ggplot(addhealth.sub, aes(x = ParenConcernMean, y = ExpectCollegeNum))
+p <- p + geom_abline(intercept = 0, slope = 1, linetype = "dashed", alpha = 0.5)
+p <- p + geom_point(aes(colour = HoursWorked), alpha = 0.5)
+p <- p + geom_smooth(method = lm)
+p <- p + scale_y_continuous(limits=c(1, 5))
+p <- p + scale_x_continuous(limits=c(1, 5))
+p <- p + coord_fixed(ratio = 1)
+print(p)
+
+#  Strong, linear and positive correlation
+library(ggplot2)
+p <- ggplot(addhealth.sub, aes(x = ParenConcernMean, y = ExpectCollegeNum))
+p <- p + geom_abline(intercept = 0, slope = 1, linetype = "dashed", alpha = 0.5)
+p <- p + geom_point(aes(colour = RaceEth), alpha = 0.5)
+p <- p + geom_smooth(method = lm)
+p <- p + scale_y_continuous(limits=c(1, 5))
+p <- p + scale_x_continuous(limits=c(1, 5))
+p <- p + coord_fixed(ratio = 1)
+print(p)
+
+library(ggplot2)
+p <- ggplot(addhealth.sub, aes(x = ParenConcernMean, y = ExpectCollegeNum))
+p <- p + geom_abline(intercept = 0, slope = 1, linetype = "dashed", alpha = 0.5)
+p <- p + geom_point(aes(colour = RaceEth))
+p <- p + geom_jitter(position = position_jitter(width = 0.1), alpha = 1/4)
+p <- p + geom_smooth(method = lm)
+p <- p + scale_y_continuous(limits=c(1, 5))
+p <- p + scale_x_continuous(limits=c(1, 5))
+p <- p + coord_fixed(ratio = 1)
+p <- p + labs(x = "Parental College Concern", y = "Expectation to Attend College", title = "Confidence Interval of Parental College Concern\n and Expectation to Attend College")
+print(p)
+
+library(ggplot2)
+p <- ggplot(addhealth.sub, aes(x = ParenConcernMean, y = ExpectCollegeNum))
+p <- p + geom_jitter(position = position_jitter(width = 0.3), alpha = 1/4, color = "brown")
+p <- p + stat_smooth(method = lm)
+p <- p + labs(x = "Parental College Concern", y = "Expectation to Attend College", title = "Confidence Interval of Parental College Concern\n and Expectation to Attend College")
+print(p)
+
+#T1 <- xtabs(~ ParenConcernMean + ExpectCollegeNum, data = addhealth.sub)
+#T1
+#barplot(T1)
+#T1 <- T1 + geom_histogram()
+```
+
+## HW 07 Parameter Estimation
+
+1. Using your dataset's description and/or codebook, briefly describe how the data were collected (the sampling strategy).
+    * (ANSWER) The Add Health design employs a clustered sampling design in which the wider network of in-school surveys comprise the "core" sample, while the "saturated" samples collect in-home information from the entire HS student population. This strategy facilitates the oversampled minority and rare groups, in addition to peer network data enabling social network analysis (SNA). 
+  * (ANSWER) The source of the information is the official website of the National Longitudinal Study of Adolescent to Adult Health: Social, Behavioral, and Biological Linkages Across the Life Course. http://www.cpc.unc.edu/projects/addhealth/faqs/aboutdata
+    * (ANSWER) The Wave I stategy employed a stratified, over-sampled design so as to capture sufficient sampling of minority and rare groups. For example, 1038 African American students from well-educated families--with a parent with a college degree. 334 Chinese, 450 Cuban, 437 Puerto Rican.
+    * (ANSWER) Potential issues (estimation bias, etc) may be a result of this collection strategy: 
+The strategy used to protect against potential sampling issues has a couple of potential bias issues that arise. First, students and parents were alerted beforehand of the date of survey and some parents could have potentially pulled their students thereby self-selection (out) of the sample. 
+    * Second, the "saturated" schools--that interviewed every student and parents at the home--were mostly (14 of 16) small-sized (n < 300 students). This type of data doesn't portray most of the stuffy, packed, busy high schools that overrun public schools. The 1994 data also mostly misses the rise and diversity of charter schooling. Besides these petty pedagogical points, the data is nationally representative. 
+
+2. Using either a numerical variable or a two-level categorical variable, calculate and interpret a confidence interval for the population mean or proportion.
+    * The variable of college expectation is the outcome variable of interest. It is a discrete-interval numerical variable along the scale from nominal, ordinal, discrete-interval, and continuous-ratio. In the case of this variable.
+    
+    * `t.test()` or `binom.test()` used to calculate the mean and confidence interval.   
+    * ANSWER: Running a simple t-test, the mean of x is 4.312 and the 95% Confidence Interval lies between 4.274 and 4.35. This is given a t of 223, df of 3002 and p-value < 2.23-16. 
+    
+    * Confidence interval.  ANSWER: The CI indicates that it is fairly clear that there is a narrow CI. I am confident that such a narrow measurement may be useful to compare with the confidence interval of only those students' expectations with working status (to be investigated below)
+    * Plot of the data, estimate, and confidence interval in a single well-labelled plot.
+
+```{R}
+t.result <- t.test(addhealth.sub$ExpectCollegeNum, conf.level = 0.95)  #$
+t.result
+```
+The sample mean of the $($College Expectation$)$ is `r signif(t.result$estimate, 3)`.
+We are 95% confident that the population mean is between
+`r signif(t.result$conf.int[1], 3)` and
+`r signif(t.result$conf.int[2], 3)`.
+
+
+```{R, cache = TRUE}
+library(ggplot2)
+p <- ggplot(addhealth.sub, aes(x = ExpectCollegeNum))
+p <- p + geom_histogram(binwidth = 2, alpha = 1)
+p <- p + geom_rug(alpha = 1/8)
+# est
+p <- p + geom_vline(aes(xintercept = as.numeric(t.result$estimate)), colour = "red", size = 2)
+p <- p + geom_rect(aes(xmin = t.result$conf.int[1], xmax = t.result$conf.int[2], ymin = -20, ymax = 0)
+                  , fill = "blue", alpha = 1)
+p <- p + labs(x = "Expectation to Attend College", title = "College Expectation \nblue = est +- 95% CI")
+print(p)
+```
+
+
+## HW08
+### Two-sample $t$-test: `ExpectCollegeNum` by `HighParenCollConcern`
+
+
+1. Using a numerical response variable and a two-level categorical variable (or a categorical variable you can reduce to two levels),
+  specify a two-sample $t$-test associated with your research questions.
+    * (2 p) Specify the hypotheses in words and notation (either one- or two-sided test),  AnNSWER: RQ Is the population mean college expectation different for those with High Parental College Concern (HPC) or not (i.e., non-HPC)?
+    * (0 p) use `t.test()` to calculate the mean, test statistic, and p-value: 
+    * (3 p) state the significance level, test statistic, and p-value, 
+    ANSWER: Sample mean of low parental concern (defined as < 4):   `Mu_{non-HPC}` = 3.528.  The `Mu_{HPC}` High Parental Concern group's mean score is 4.46 (expectation to attend college, scale of 1-5). ,the test statistic is t = -14.128.  P-value < 2.2e-16. So we're sure that those that do not have high parental support are between -1 and -.8 difference of mean expectation, at least according to the Welch Two Sample t-test.
+    * (2 p) state the conclusion in the context of the problem.  The real answers to this is that a clear indication justifying the rejecting of the null hypothesis, stating that expecation does not differ between those with high parental college support and those with low parental college support 
+    * (1 p) Given your conclusion, could you have committed at Type-I or Type-II error?  ANSWER: Had I done nothing and failed to reject the null--either through complacency or complicity--I would commit a type-II error. 
+    * (2 p) Provide an appropriate plot of the data and sample estimates in a well-labelled plot.
+
+
+```{R}
+## If we create a summary data.frame with a similar structure as our data, then we
+##   can annotate our plot with those summaries.
+library(plyr)
+est.mean.TCS.D <- ddply(addhealth.sub
+                      , "HighParenCollConcern"
+                      , summarise
+                      , ExpectCollegeNum = mean(ExpectCollegeNum, na.rm = TRUE)
+                      )
+est.mean.TCS.D
+```
+
+```{R}
+is.numeric(addhealth.sub$ExpectCollegeNum)
+#factor(addhealth.sub$ExpectCollegeNum)
+library(ggplot2)
+p <- ggplot(addhealth.sub, aes(x = HighParenCollConcern, y = ExpectCollegeNum))
+summary(ExpectCollegeNum)
+class(ExpectCollegeNum)
+str(ExpectCollegeNum)
+p <- p + geom_boxplot(width = 0.5, alpha = 0.5)
+p <- p + geom_jitter(position = position_jitter(width = 0.1), alpha = 1/4)
+# diamond at mean for each group
+p <- p + stat_summary(fun.y = mean, geom = "point", shape = 18, size = 6, colour = "red", alpha = 0.8)
+p <- p + labs(x = "Parental College Concern", y = "Expectation to attend College", title = "College Expectation \n by Parental College Concern")
+print(p)
+```
+
+```{R}
+# histogram using ggplot
+addhealth.sub$HighParenCollConcern <- factor(addhealth.sub$HighParenCollConcern)
+p <- ggplot(addhealth.sub, aes(x = ExpectCollegeNum))
+p <- p + geom_histogram(binwidth = .5)
+p <- p + geom_rug()
+p <- p + geom_hline(data = est.mean.TCS.D, aes(xintercept = ExpectCollegeNum, colour = "red"))
+p <- p + facet_grid(HighParenCollConcern ~ .)
+p <- p + labs(y = "Count of Students", x = "Expectation to Attend College", title = "College Expectation \n by High Parental College Concern")
+print(p)
+
+```
+
+
+```{R}
+t.summary.TCS.D <- t.test(ExpectCollegeNum ~ HighParenCollConcern, addhealth.sub)
+t.summary.TCS.D
+```
+
+1. ``Is the population mean college expectation different for those with High Parental Concern (HPC) or not (LPC)?''
+    * $H_0: \mu_{HPC} = \mu_{LPC}$ versus $H_A: \mu_{HPC} \ne \mu_{LPC}$
+
+2. Let $\alpha=0.05$, the significance level of the test and the Type-I error probability if the null hypothesis is true.
+
+3. $t_{s} = `r signif(t.summary.TCS.D$statistic, 4)`$.
+
+4. $p=`r signif(t.summary.TCS.D$p.value, 3)`$, this is the observed significance of the test.
+
+5. Because $p=`r signif(t.summary.TCS.D$p.value, 3)` < 0.05$,
+    we have sufficient evidence to reject $H_0$, concluding that the
+   college expectations do indeed differ by parental college concern.
+
+Final Conclusion: Because I rejected $H_0$ on overwhelming evidence to reject the null, I would have committed a Type-II error (that there is a difference and I failed to announce it to the research community). I also know that there is 3.62×10???39 likelihood that I'm committing a type I error--given an alpha coefficient of 05.  (that there is no difference and my announcement is a spurious finding (which only confuses the research community)).
+
+
+
+## HW 09 
+# Rubric
+
+1. Using a numerical response variable and a categorical variable with three to five levels (or a categorical variable you can reduce to three to five levels),
+  specify an ANOVA hypothesis associated with your research questions.
+    * (1 p) Specify the ANOVA hypotheses in words and notation, 
+    * ANSWER: Let $\mu_i$ = pop mean Expectation to Attend College for children in group $i$, $(i=1,2,3,4)$.
+We wish to test $H_0: \mu_1=\mu_2=\mu_3$ against $H_A: \textrm{not } H_0$.
+We read in the data, create a `Expectation` factor variable,
+  and plot the data by the four groups, by combinations of the binarys working status and high parental college expectation.
+    * (1 p) plot the data in a way that is consistent with hypothesis test (comparing means, assess equal variance assumption),
+
+    * (1 p) use `aov()` to calculate the hypothesis test statistic and p-value,
+    * (1 p) state the significance level, test statistic, and p-value,
+    * (1 p) state the conclusion in the context of the problem,
+    * (2 p) assess the normality assumption of the residuals using the bootstrap, QQ-plot, and Anderson-Darling test, and
+    * (1 p) assess the assumption of equal variance between your groups using an appropriate test (also mention standard deviations of each group).
+    * (2 p) If you rejected the ANOVA null hypothesis, perform follow-up pairwise comparisons using Tukey's HSD to indicate which groups have statistically different means and summarize the results.
+
+#Start response 
+Let $\mu_i$ = pop mean birth weight (lb) for children in group $i$, $(i=1,2,3)$.
+We wish to test $H_0: \mu_1=\mu_2=\mu_3$ against $H_A: \textrm{not } H_0$.
+We read in the data, create a `smoke` factor variable,
+  and plot the data by smoking group.
+
+
+Plot the data in a way that compares the means.
+Error bars are 95% confidence intervals of the mean.
+```{R}
+# Plot the data using ggplot
+library(ggplot2)
+p <- ggplot(addhealth.sub, aes(x = Studen_, y = ExpectCollegeNum))
+# plot a reference line for the global mean (assuming no groups)
+is.numeric(addhealth.sub$ExpectCollegeNum)
+is.numeric(addhealth.sub$ExpectCollegeNum)
+#logExpectCollegeNum <- log10(addhealth.sub$ExpectCollegeNum + 1)
+#is.numeric(addhealth.sub$logExpectCollegeNum)
+dim(addhealth.sub)
+summary(ExpectCollegeNum)
+class(addhealth.sub$ExpectCollegeNum)
+addhealth.sub$ExpectCollegeNum <- (ExpectCollegeNum)
+is.numeric(addhealth.sub$ExpectCollegeNum)
+```
+<!--
+```{R}
+p <- ggplot(addhealth.sub, aes(x = Studen, y = ExpectCollegeNum))
+p <- p + geom_hline(yintercept = mean(addhealth.sub$ExpectCollegeNum),
+                    colour = "black", linetype = "dashed", size = 0.3, alpha = 0.5)
+# boxplot, size=.75 to stand out behind CI
+p <- p + geom_violin(width = 0.5, alpha = 0.25)
+p <- p + geom_boxplot(width = 0.25, alpha = 0.25)
+# points for observed data
+p <- p + geom_point(position = position_jitter(w = 0.05, h = 0), alpha = 0.2)
+# diamond at mean for each group
+p <- p + stat_summary(fun.y = mean, geom = "point", shape = 18, size = 4,
+                      colour = "red", alpha = 0.8)
+# confidence limits based on normal distribution
+p <- p + stat_summary(fun.data = "mean_cl_normal", geom = "errorbar",
+                      width = .2, colour = "red", alpha = 0.8)
+p <- p + labs(title = "College Expectation vs Student Type") +
+          ylab("College Expectation")
+print(p)
+```
+__Hypothesis test__
+1. Set up the __null and alternative hypotheses__ in words and notation.
+    * In words: ``The population mean birthweight is different between smoking groups.''
+    * In notation: $H_0: \mu_1=\mu_2=\mu_3$ versus $H_A: \textrm{not } H_0$ (at least one pair of means differ).
+2. Let the significance level of the test be $\alpha=0.05$.
+<!--
+3. Compute the __test statistic__.
+```{R}
+#fit.c <- aov(ExpectCollegeNum ~ Studen, data = addhealth.sub)
+#summary(fit.c)
+```
+-->
+__Hypothesis test__
+The $F$-statistic for the ANOVA is $F = `r signif(unlist(summary(fit.c))["ExpectCollegeNum"], 3)`$.
+4. Compute the __$p$-value__ from the test statistic.
+The p-value for testing the null hypothesis is
+  $p = `r signif(unlist(summary(fit.c))["Pr(>F)1"], 3)`$.
+5. (2 p) State the __conclusion__ in terms of the problem.
+6. __Check assumptions__ of the test.
+  a. Residuals are normal
+  b. Populations have equal variances.
+* Check whether residuals are normal.
+- Plot the residuals and assess whether they appear normal.
+<!--
+```{R}
+# Plot the data using ggplot
+df.res <- data.frame(addhealth.sub = fit.c$residuals)
+library(ggplot2)
+p <- ggplot(addhealth.sub, aes(x = res))
+p <- p + geom_histogram(aes(y = ..density..), binwidth = 0.2)
+p <- p + geom_density(colour = "blue")
+p <- p + geom_rug()
+p <- p + stat_function(fun = dnorm, colour = "red", arg = list(mean = mean(addhealth.sub$ExpectCollegeNum), sd = sd(addhealth.sub$ExpectCollegeNum)))
+p <- p + labs(title = "ANOVA Residuals")
+print(p)
+```
+-->
+(1 p) Describe the plot of residuals as it relates to model assumptions. ANSWER: ANOVA Model assumptions require that the population have equal spreads evidenced by heavy tails and skews and that the population curve be normal. Since the residuals reveal a relatively normal curve of the sample. In fact, this distribution would almost resemble a sample from a known "normal" population. Comparing the ideal with our own sample distrbution, this is sufficiently normal to proceed.
+
+
+- Plot the residuals versus the normal quantiles.
+  If the residuals are normal, then the will fall on the center line and
+  very few will be outside the error bands.
+
+```{R}
+# QQ plot
+par(mfrow=c(1,1))
+library(car)
+qqPlot(fit.c$residuals, las = 1, id.n = 0, id.cex = 1, lwd = 1, main="QQ Plot")
+```
+
+(1 p) Describe the plot of residuals as it relates to model assumptions.
+ANSWER: So, here the distribution looks good with only a couple outliers at the left tail. 
+
+
+
+- A formal test of normality on the residuals tests the hypothesis
+  $H_0:$ The distribution is Normal vs
+  $H_1:$ The distribution is not Normal.
+We can test the distribution of the residuals.
+
+Three tests for normality are reported below.
+I tend to like the Anderson-Darling test.
+Different tests have different properties, and
+  tests that are sensitive to differences from normality in the tails of the
+  distribution are typically more important for us (since deviations in the tails
+  are more influential than deviations in the center).
+
+```{R}
+shapiro.test(fit.c$residuals)
+library(nortest)
+ad.test(fit.c$residuals)
+cvm.test(fit.c$residuals)
+```
+
+(1 p) Interpret the conclusion of the Anderson-Darling test.  ANSWER: Firstly, we can use the test because there is not a heavy left or heavy right tail, or any other problem.  The AD test reveals the P-value is .1449. This is not problematic because it is normal .. no need for other tests. In this case, we want to reject the null hypothesis, so we desire > .05 for p-value.
+
+
+
+
+
+
+* Check whether populations have equal variances.
+
+- Look at the numerical summaries below.
+
+```{R}
+# calculate summaries
+library(plyr)
+chds.summary <- ddply(addhealth.sub, "",
+     function(X) { data.frame( m = mean(X$c_bwt),
+                               s = sd(X$c_bwt),
+                               n = length(X$c_bwt) ) } )
+chds.summary
+```
+
+(1 p) Interpret the standard deviations above.  You may also discuss the plots of the data.
+ANSWER: The stand deviation increases slightly with more smoking groups. 
+
+- Formal tests for equal variances.
+We can test whether the variances are equal between our three groups.
+This is similar to the ANOVA hypothesis, but instead of testing means we're tesing variances.
+$H_0: \sigma^2_1=\sigma^2_2=\sigma^2_3$
+versus $H_A: \textrm{not } H_0$ (at least one pair of variances differ).
+
+```{R}
+## Test equal variance
+# assumes populations are normal
+bartlett.test(c_bwt ~ smoke, data = chds)
+
+# does not assume normality, requires car package
+library(car)
+leveneTest(c_bwt ~ smoke, data = chds)
+
+# nonparametric test
+fligner.test(c_bwt ~ smoke, data = chds)
+```
+
+(1 p) Interpret the result of the appropriate test.
+If normality was reasonable then use Bartlett, otherwise use Levene.
+
+ANSWER: Using the Bartlett due to normal distribution, the test indicates p-value of .8583. (P-value is derived from 'area under the chi-squared curve to the right of B obs.) In this case again we do not want to reject the null hypothesis (which is normality).
+
+7. If the ANOVA null hypothesis was rejected, then perform follow-up Post Hoc
+  pairwise comparison tests to determine which pairs of means are different.
+
+There are several multiple comparison methods described in the notes.
+Let's use Tukey's Honest Significant Difference (HSD) here to test which pairs of
+populations differ.
+```{R}
+## Add Health
+# Tukey 95% Individual p-values
+TukeyHSD(fit.c)
+```
+
+(2 p) Interpret the comparisons (which pairs differ).
+ANSWER: According to Tukey's Honest Signicant Difference test, We see the three comparisons of the three groups, and clearly the pairs with a '0-cig' are much more different than the other two pairs. Therefore, group 0-cigs diffs greatly from the others.
+
+
+(1 p) Summarize results by ordering the means and grouping pairs that do not differ (see notes for examples).
+
+```
+Replace this example with your results.
+
+  Example:  [0=cigs and 20+] AND [0+ and 1-19] groups differ, but group pairing 20+ and 1-19 is not different from either.
+    (These groups are ordered by mean, so A has the lowest mean and C has the highest.)
+These groups are ordered by mean, so that 0-cigs is lowest, and 1-19 is highest
+    0=cigs     20+   1-19
+    ------     ----------------
+
+-->```
+
+## References
+
